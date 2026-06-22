@@ -4,9 +4,10 @@
    ======================================================== */
 
 .app {
-  display: flex; flex-direction: column; min-height: 100vh;
-  overscroll-behavior: none; overflow-x: hidden; background: var(--bg-primary);
+  display: flex; flex-direction: column; height: 100vh;
+  overflow: hidden; background: var(--bg-primary);
 }
+
 
 /* ========================================================
    HEADER — M3 Top App Bar
@@ -130,13 +131,19 @@
   margin: 0 auto;
   padding: 1.5rem 2rem;
   gap: 2.5rem;
-  align-items: start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
+
+/* Custom scrollbars for desktop columns */
+.sidebar::-webkit-scrollbar, .content::-webkit-scrollbar, .rightSidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb, .content::-webkit-scrollbar-thumb, .rightSidebar::-webkit-scrollbar-thumb { background-color: rgba(150, 150, 150, 0.3); border-radius: 10px; }
 
 /* ========================================================
    LEFT SIDEBAR
    ======================================================== */
-.sidebar { position: sticky; top: calc(64px + 1.5rem); height: max-content; }
+.sidebar { height: 100%; overflow-y: auto; padding-right: 0.5rem; padding-bottom: 2rem; }
 .sidebarOverlay { display: none; }
 
 .btnStartDiscussion {
@@ -161,7 +168,12 @@
 /* ========================================================
    MIDDLE CONTENT AREA (Feed / Post)
    ======================================================== */
-.content { min-width: 0; padding-bottom: 2rem; }
+.content { 
+  min-width: 0; height: 100%; overflow-y: auto; overflow-x: hidden;
+  padding-right: 0.5rem; padding-bottom: 4rem;
+  -webkit-overflow-scrolling: touch;
+}
+
 .contentHeader { margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; }
 .contentHeader h1 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
 
@@ -245,7 +257,8 @@
 /* ========================================================
    RIGHT SIDEBAR (Extra Desktop Content)
    ======================================================== */
-.rightSidebar { position: sticky; top: calc(64px + 1.5rem); height: max-content; display: flex; flex-direction: column; gap: 1.5rem; }
+.rightSidebar { height: 100%; overflow-y: auto; padding-right: 0.5rem; padding-bottom: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
 .widgetCard { background: var(--bg-secondary); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--border-color); }
 .widgetTitle { font-size: 1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem; }
 .widgetList { display: flex; flex-direction: column; gap: 1.25rem; }
@@ -272,7 +285,7 @@
 
 @media (max-width: 900px) {
   /* Mobile layout */
-  .container { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 1rem; padding-bottom: 80px; }
+  .container { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; height: 100%; }
 
   /* Left Sidebar becomes a fixed drawer */
   .sidebar {
@@ -297,7 +310,9 @@
   .dropdownMenu, .notificationMenu { position: fixed; top: 68px; right: 0.5rem; left: auto; width: calc(100vw - 1rem); }
 
   /* Content area adjustments */
+  .content { padding: 1rem; padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom))); height: 100%; overflow-y: auto; }
   .discussion { padding: 0.85rem 1rem; border-radius: 14px; gap: 0.85rem; }
+
   .discussionAvatar { width: 38px; height: 38px; font-size: 0.95rem; }
 
   .postNativeContainer { border-radius: 16px; padding: 1.25rem; border: none; }
