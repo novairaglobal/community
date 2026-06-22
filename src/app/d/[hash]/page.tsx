@@ -46,7 +46,8 @@ export default function PostNativePage() {
   const ACCOUNTS_URL = 'https://accounts.novairasolution.com';
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
-  const commentInputRef = useRef<HTMLInputElement>(null);
+  const commentInputRefMobile = useRef<HTMLInputElement>(null);
+  const commentInputRefDesktop = useRef<HTMLTextAreaElement>(null);
   const emojiPanelRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -103,8 +104,8 @@ export default function PostNativePage() {
     } catch { }
   };
 
-  const submitComment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitComment = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!user || !post || !newComment.trim()) return;
     setIsCommenting(true);
     try {
@@ -127,7 +128,15 @@ export default function PostNativePage() {
   const handleReply = (comment: Comment) => {
     setReplyingTo(comment);
     setNewComment('');
-    setTimeout(() => commentInputRef.current?.focus(), 50);
+    // Focus whichever input is visible based on screen size (basic logic)
+    setTimeout(() => {
+      if (window.innerWidth > 900) {
+        commentInputRefDesktop.current?.focus();
+        commentInputRefDesktop.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        commentInputRefMobile.current?.focus();
+      }
+    }, 50);
   };
 
   const cancelReply = () => { setReplyingTo(null); setNewComment(''); };
@@ -172,17 +181,7 @@ export default function PostNativePage() {
   );
 
   return (
-    /**
-     * NATIVE APP SHELL:
-     *   postPageApp (flex col, 100vh, overflow hidden)
-     *     ├─ header (flex-shrink:0)
-     *     ├─ postScrollBody (flex:1, overflow-y:auto, flex-direction:row on desktop)
-     *     │    ├─ aside.sidebar  → sticky 240px col on desktop / fixed overlay on mobile
-     *     │    └─ postBodyInner  → flex:1 content
-     *     ├─ replyHint (flex-shrink:0, shown only when replying)
-     *     └─ stickyCommentBar (flex-shrink:0)
-     */
-    <div className={styles.postPageApp}>
+    <div className={styles.app}>
 
       {/* ══ HEADER ══ */}
       <header className={styles.header}>
@@ -265,18 +264,11 @@ export default function PostNativePage() {
         </div>
       </header>
 
-      {/* ══ SCROLLABLE BODY ══
-          flex-direction: row on desktop → sidebar | content
-          flex-direction: col on mobile → content only (sidebar is fixed overlay)  */}
-      <div className={styles.postScrollBody}>
+      {/* ══ 3-COLUMN MAIN CONTAINER ══ */}
+      <div className={styles.container}>
 
-        {/* Mobile overlay backdrop */}
-        <div
-          className={`${styles.sidebarOverlay} ${mobileMenuOpen ? styles.open : ''}`}
-          onClick={() => setMobileMenuOpen(false)}
-        ></div>
-
-        {/* Sidebar — sticky column on desktop / fixed overlay on mobile */}
+        {/* 1. LEFT SIDEBAR */}
+        <div className={`${styles.sidebarOverlay} ${mobileMenuOpen ? styles.open : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
         <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
           <button className={styles.btnStartDiscussion} onClick={() => {
             if (!user) { window.location.href = loginUrl; return; }
@@ -284,6 +276,7 @@ export default function PostNativePage() {
           }}>
             <i className="fas fa-edit"></i> Start Discussion
           </button>
+          
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
               <button onClick={() => router.push('/')} className={styles.navItem}>
@@ -291,6 +284,7 @@ export default function PostNativePage() {
               </button>
             </div>
           </div>
+          
           <div className={styles.navGroup}>
             <div className={styles.navGroupTitle}>Tags</div>
             <div className={styles.navMenu}>
@@ -303,9 +297,9 @@ export default function PostNativePage() {
           </div>
         </aside>
 
-        {/* Content */}
-        <div className={styles.postBodyInner}>
-          <button className={styles.btnBack} onClick={() => router.back()} style={{ marginBottom: '0.75rem' }}>
+        {/* 2. MIDDLE CONTENT (Post) */}
+        <main className={styles.content}>
+          <button className={styles.btnBack} onClick={() => router.back()}>
             <i className="fas fa-arrow-left" style={{ color: 'var(--brand-green)' }}></i> Back
           </button>
 
@@ -314,13 +308,13 @@ export default function PostNativePage() {
             <div className={styles.postHeaderArea}>
               <div className={styles.deepAvatar}>{post.first_name.charAt(0).toUpperCase()}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{post.first_name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(post.created_at).toLocaleString()}</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1.05rem' }}>{post.first_name}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(post.created_at).toLocaleString()}</div>
               </div>
               <span style={{
                 background: `${getTagColor(post.tags)}18`, color: getTagColor(post.tags),
                 border: `1px solid ${getTagColor(post.tags)}40`, borderRadius: '100px',
-                padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0
+                padding: '0.25rem 0.85rem', fontSize: '0.8rem', fontWeight: 800, flexShrink: 0
               }}>{post.tags}</span>
             </div>
 
@@ -328,9 +322,9 @@ export default function PostNativePage() {
             <div className={styles.postContentArea}>{post.content}</div>
 
             {/* Stats */}
-            <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-muted)', fontSize: '0.82rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.75rem' }}>
-              <span><i className="far fa-eye" style={{ marginRight: '0.3rem' }}></i>{post.views} views</span>
-              <span><i className="far fa-comment" style={{ marginRight: '0.3rem' }}></i>{comments.length} comments</span>
+            <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.25rem', fontWeight: 600 }}>
+              <span><i className="far fa-eye" style={{ marginRight: '0.4rem' }}></i>{post.views} views</span>
+              <span><i className="far fa-comment" style={{ marginRight: '0.4rem' }}></i>{comments.length} comments</span>
             </div>
 
             {/* Reactions */}
@@ -355,17 +349,52 @@ export default function PostNativePage() {
               </div>
             </div>
 
+            {/* ====== DESKTOP COMMENT BOX (Hides on Mobile) ====== */}
+            <div className={styles.desktopCommentBox}>
+              <div className={styles.desktopCommentHeader}>
+                <i className="far fa-comment-dots" style={{ color: 'var(--brand-green)', fontSize: '1.2rem' }}></i>
+                {replyingTo ? `Replying to ${replyingTo.first_name}` : 'Leave a comment'}
+              </div>
+              
+              {replyingTo && (
+                <div className={styles.desktopReplyHint}>
+                  <span>Replying to <strong>{replyingTo.first_name}</strong></span>
+                  <button onClick={cancelReply} title="Cancel reply"><i className="fas fa-times"></i></button>
+                </div>
+              )}
+
+              <textarea
+                ref={commentInputRefDesktop}
+                className={styles.desktopCommentInput}
+                placeholder={user ? "Share your thoughts..." : "Log in to join the discussion..."}
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                disabled={!user || isCommenting}
+              />
+              <div className={styles.desktopCommentActions}>
+                {user && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>
+                    <div className={styles.headerAvatar} style={{ width: 28, height: 28, fontSize: '0.8rem' }}>{user.name.charAt(0).toUpperCase()}</div>
+                    {user.name}
+                  </div>
+                )}
+                <button className={styles.btnDesktopComment} onClick={() => submitComment()} disabled={!user || isCommenting || !newComment.trim()}>
+                  {isCommenting ? <><i className="fas fa-spinner fa-spin"></i> Posting...</> : 'Post Comment'}
+                </button>
+              </div>
+            </div>
+
             {/* Comments heading */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Comments</h3>
-              <span style={{ background: 'var(--brand-green)', color: '#fff', borderRadius: '100px', padding: '0.05rem 0.55rem', fontSize: '0.72rem', fontWeight: 800 }}>{comments.length}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Comments</h3>
+              <span style={{ background: 'var(--brand-green)', color: '#fff', borderRadius: '100px', padding: '0.1rem 0.65rem', fontSize: '0.8rem', fontWeight: 800 }}>{comments.length}</span>
             </div>
 
             {/* Comment list */}
             <div className={styles.commentList}>
               {topLevelComments.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                  <i className="far fa-comment-dots" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.4rem', opacity: 0.35 }}></i>
+                <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                  <i className="far fa-comment-dots" style={{ fontSize: '2rem', display: 'block', marginBottom: '0.6rem', opacity: 0.35 }}></i>
                   No comments yet — be the first!
                 </div>
               ) : topLevelComments.map(c => (
@@ -407,18 +436,41 @@ export default function PostNativePage() {
             </div>
             <div style={{ height: '0.5rem' }}></div>
           </div>
-        </div>
+        </main>
+
+        {/* 3. RIGHT SIDEBAR (Extra Content - Visible only on Desktop) */}
+        <aside className={styles.rightSidebar}>
+          <div className={styles.widgetCard}>
+            <div className={styles.widgetTitle}><i className="fas fa-fire" style={{ color: '#ff4d4f' }}></i> Trending Now</div>
+            <div className={styles.widgetList}>
+              <div className={styles.widgetItem}>
+                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
+                <div className={styles.widgetItemBody}>
+                  <div className={styles.widgetItemTitle}>Novaira Deep Green Update details</div>
+                  <div className={styles.widgetItemSub}>1.2k views • Newsroom</div>
+                </div>
+              </div>
+              <div className={styles.widgetItem}>
+                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
+                <div className={styles.widgetItemBody}>
+                  <div className={styles.widgetItemTitle}>Best practices for React 19</div>
+                  <div className={styles.widgetItemSub}>850 views • My Squad</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
       </div>
 
-      {/* ══ REPLY HINT BANNER — shows above comment bar when replying ══ */}
+      {/* ====== MOBILE ONLY: STICKY COMMENT BAR (Hides on Desktop) ====== */}
       {replyingTo && (
-        <div className={styles.replyHint}>
-          <span><i className="fas fa-reply" style={{ marginRight: '0.4rem' }}></i>Replying to <strong>{replyingTo.first_name}</strong></span>
-          <button onClick={cancelReply} title="Cancel reply"><i className="fas fa-times"></i></button>
+        <div className={`${styles.replyHintMobile} ${styles.stickyCommentBar}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))', display: 'flex', borderTop: 'none', background: 'var(--bg-secondary)', padding: '0.35rem 1rem' }}>
+          <span style={{ color: 'var(--brand-green)', fontWeight: 700, fontSize: '0.85rem' }}><i className="fas fa-reply" style={{ marginRight: '0.4rem' }}></i>Replying to <strong>{replyingTo.first_name}</strong></span>
+          <button onClick={cancelReply} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1rem' }}><i className="fas fa-times"></i></button>
         </div>
       )}
-
-      {/* ══ COMMENT BAR — always visible at bottom ══ */}
+      
       <form className={styles.stickyCommentBar} onSubmit={submitComment}>
         {user ? (
           <div style={{
@@ -430,7 +482,7 @@ export default function PostNativePage() {
           </div>
         ) : null}
         <input
-          ref={commentInputRef}
+          ref={commentInputRefMobile}
           type="text"
           className={styles.stickyCommentInput}
           placeholder={
@@ -446,6 +498,7 @@ export default function PostNativePage() {
           {isCommenting ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
         </button>
       </form>
+
     </div>
   );
 }
