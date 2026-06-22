@@ -3,56 +3,22 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 
-// Centralized mock database for Discussion Threads
-const initialThreads = [
-  {
-    id: 1,
-    avatar: { letter: 'N', bg: 'var(--bg-secondary)', color: 'var(--text-secondary)' },
-    title: 'Weekly Squad Challenge: Earn 20% Multiplier!',
-    tags: [{ name: 'My Squad', color: '#f5a623' }],
-    author: 'NovairaAdmin',
-    time: '2 days ago',
-    replies: 142,
-    views: '4.2k'
-  },
-  {
-    id: 2,
-    avatar: { letter: 'B', bg: '#cd7f32', color: '#fff' },
-    title: 'Bronze Tier Guide: Standard Payouts (72h) & Benefits',
-    tags: [{ name: 'VIP Tiers', color: '#10b981' }],
-    author: 'System',
-    time: '5 days ago',
-    replies: 89,
-    views: '1.2k'
-  },
-  {
-    id: 3,
-    avatar: { letter: 'D', bg: '#b9f2ff', color: '#000' },
-    title: 'Diamond Status Requirements: Direct CEO Access',
-    tags: [{ name: 'VIP Tiers', color: '#10b981' }, { name: 'Newsroom', color: '#d71921' }],
-    author: 'NovairaAdmin',
-    time: '1 week ago',
-    replies: 412,
-    views: '12.8k'
-  },
-  {
-    id: 4,
-    avatar: { icon: 'fas fa-bullhorn', bg: 'var(--bg-secondary)', color: 'var(--text-secondary)' },
-    title: 'Community Rules & Code of Conduct',
-    tags: [{ name: 'Newsroom', color: '#d71921' }],
-    author: 'NovairaAdmin',
-    time: '1 month ago',
-    replies: 0,
-    views: '25.1k'
-  }
-];
+// TypeScript Interface for Live Discussions
+interface Discussion {
+  id: number;
+  user_id: string;
+  first_name: string;
+  user_type: string;
+  title: string;
+  content: string;
+  tags: string;
+  views: number;
+  created_at: string;
+  replies?: number; // Placeholder for future reply system
+}
 
 export default function Home() {
   const [theme, setTheme] = useState('dark');
-  const [friends, setFriends] = useState(15);
-  const [tasks, setTasks] = useState(10);
-  const [income, setIncome] = useState(0);
-  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +26,18 @@ export default function Home() {
   const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   const [user, setUser] = useState<{ id: string | number; name: string; tier: string } | null>(null);
 
+  // Live Database States
+  const [threads, setThreads] = useState<Discussion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newTag, setNewTag] = useState('Newsroom');
+  const [newContent, setNewContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const API_URL = 'https://accounts.novairasolution.com/api/discussions.php'; // The new PHP endpoint
   const ACCOUNTS_URL = 'https://accounts.novairasolution.com';
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -70,6 +48,7 @@ export default function Home() {
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    // 1. Check Session
     const checkSession = async () => {
       try {
         const res = await fetch(`${ACCOUNTS_URL}/api/get_user.php`, {
@@ -89,7 +68,10 @@ export default function Home() {
     };
     checkSession();
 
-    // Close dropdown when clicking outside
+    // 2. Fetch Live Discussions
+    fetchDiscussions();
+
+    // Close dropdown
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
@@ -99,12 +81,64 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const total = Math.floor(friends * tasks * 1.5 * 30);
-    setIncome(total);
-  }, [friends, tasks]);
+  // Fetch discussions from PHP Backend
+  const fetchDiscussions = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}?action=fetch`);
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        setThreads(data.data);
+      } else {
+        console.error("Error fetching discussions:", data.message);
+      }
+    } catch (err) {
+      console.error("Failed to connect to discussions API", err);
+    }
+    setIsLoading(false);
+  };
 
-  // Sync mobile status bar color with the theme
+  // Submit New Discussion
+  const submitDiscussion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      alert("You must be logged in to post.");
+      return;
+    }
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch(`${API_URL}?action=create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          first_name: user.name,
+          user_type: user.tier,
+          title: newTitle,
+          tags: newTag,
+          content: newContent
+        })
+      });
+      const data = await res.json();
+      
+      if (data && data.status === 'success') {
+        // Clear form and close modal
+        setNewTitle('');
+        setNewContent('');
+        setIsModalOpen(false);
+        // Refresh feed
+        fetchDiscussions();
+      } else {
+        alert("Failed to post: " + data.message);
+      }
+    } catch (err) {
+      console.error("Post error", err);
+      alert("Network error while posting.");
+    }
+    setIsSubmitting(false);
+  };
+
   useEffect(() => {
     let metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (!metaThemeColor) {
@@ -126,16 +160,24 @@ export default function Home() {
   const registerUrl = `${ACCOUNTS_URL}/?registration=individual&redirect=${encodeURIComponent(currentUrl)}`;
   const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
 
+  // Helper to map tags to colors
+  const getTagColor = (tagName: string) => {
+    if (tagName === 'Newsroom') return '#d71921';
+    if (tagName === 'VIP Tiers') return '#10b981';
+    if (tagName === 'My Squad') return '#f5a623';
+    return '#0070f3';
+  };
+
   // Real-time Search Filtering
-  const filteredThreads = initialThreads.filter(thread => 
+  const filteredThreads = threads.filter(thread => 
     thread.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    thread.tags.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    thread.tags.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className={styles.app}>
       
-      {/* HEADER (Flarum Clone) */}
+      {/* HEADER (3D Glassmorphism) */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -172,7 +214,6 @@ export default function Home() {
                 {user.name.charAt(0)}
               </div>
               
-              {/* Profile Floating Dropdown Menu */}
               {dropdownOpen && (
                 <div className={styles.dropdownMenu}>
                   <div className={styles.dropdownHeader}>
@@ -207,22 +248,22 @@ export default function Home() {
       {/* MAIN CONTAINER */}
       <div className={styles.container}>
         
-        {/* Mobile Overlay */}
         <div className={`${styles.sidebarOverlay} ${mobileMenuOpen ? styles.open : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
 
-        {/* SIDEBAR (Flarum Tags Navigation) */}
+        {/* SIDEBAR */}
         <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
-          <button className={styles.btnStartDiscussion} onClick={() => setMobileMenuOpen(false)}>
+          <button className={styles.btnStartDiscussion} onClick={() => {
+            if (!user) { alert('Please log in to start a discussion.'); window.location.href = loginUrl; return; }
+            setIsModalOpen(true); 
+            setMobileMenuOpen(false);
+          }}>
             <i className="fas fa-edit"></i> Start a Discussion
           </button>
 
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
-              <a href="#" className={`${styles.navItem} ${styles.active}`} onClick={() => { setSearchQuery(''); setMobileMenuOpen(false); }}>
+              <a onClick={() => { setSearchQuery(''); setMobileMenuOpen(false); }} className={`${styles.navItem} ${!searchQuery ? styles.active : ''}`}>
                 <i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions
-              </a>
-              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
-                <i className={`far fa-star ${styles.navIcon}`}></i> Following
               </a>
             </div>
           </div>
@@ -230,83 +271,71 @@ export default function Home() {
           <div className={styles.navGroup}>
             <div className={styles.navGroupTitle}>Tags</div>
             <div className={styles.navMenu}>
-              <a href="#" className={styles.navItem} onClick={() => { setSearchQuery('Newsroom'); setMobileMenuOpen(false); }}>
+              <a onClick={() => { setSearchQuery('Newsroom'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#d71921'}}></span> Newsroom
               </a>
-              <a href="#" className={styles.navItem} onClick={() => { setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); }}>
+              <a onClick={() => { setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#10b981'}}></span> VIP Tiers
               </a>
-              <a href="#" className={styles.navItem} onClick={() => { setSearchQuery('My Squad'); setMobileMenuOpen(false); }}>
+              <a onClick={() => { setSearchQuery('My Squad'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#f5a623'}}></span> My Squad
+              </a>
+              <a onClick={() => { setSearchQuery('General'); setMobileMenuOpen(false); }} className={styles.navItem}>
+                <span className={styles.tagDot} style={{background: '#0070f3'}}></span> General
               </a>
             </div>
           </div>
         </aside>
 
-        {/* CONTENT AREA (Discussions) */}
+        {/* CONTENT AREA */}
         <main className={styles.content}>
           <div className={styles.contentHeader}>
-            <h1>{searchQuery ? `Search Results for "${searchQuery}"` : 'Gamification Hub'}</h1>
+            <h1>{searchQuery ? `Search Results for "${searchQuery}"` : 'Live Discussions'}</h1>
+            <div style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}><i className="fas fa-rss"></i> Live Feed</div>
           </div>
 
-          {/* Gamification Interactive Block - Only show if not heavily filtering */}
-          {!searchQuery && (
-            <div className={styles.feedBox}>
-              <h2 className={styles.feedBoxTitle}>Income Simulator</h2>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
-                <div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 700}}>
-                    <span>Active Referrals</span>
-                    <span className={styles.monoText}>{friends}</span>
-                  </div>
-                  <input type="range" min="1" max="100" value={friends} onChange={(e) => setFriends(Number(e.target.value))} className={styles.slider} />
-                </div>
-                <div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 700}}>
-                    <span>Daily Tasks Done</span>
-                    <span className={styles.monoText}>{tasks}</span>
-                  </div>
-                  <input type="range" min="1" max="20" value={tasks} onChange={(e) => setTasks(Number(e.target.value))} className={styles.slider} />
-                </div>
-                <div style={{marginTop: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '4px', textAlign: 'center'}}>
-                  <div style={{fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '1px'}}>Estimated Monthly Payout</div>
-                  <div className={styles.monoText} style={{fontSize: '2rem', marginTop: '0.5rem', color: 'var(--brand-red)'}}>₹{income.toLocaleString()}</div>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className={styles.discussionList}>
-            {filteredThreads.length > 0 ? (
+            {isLoading ? (
+              <div className={styles.loader}>
+                <i className="fas fa-circle-notch fa-spin"></i>
+              </div>
+            ) : filteredThreads.length > 0 ? (
               filteredThreads.map(thread => (
                 <div key={thread.id} className={styles.discussion}>
-                  <div className={styles.discussionAvatar} style={{background: thread.avatar.bg, color: thread.avatar.color}}>
-                    {thread.avatar.icon ? <i className={thread.avatar.icon}></i> : thread.avatar.letter}
+                  <div className={styles.discussionAvatar}>
+                    {thread.first_name ? thread.first_name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className={styles.discussionBody}>
                     <h3 className={styles.discussionTitle}>{thread.title}</h3>
                     <div className={styles.discussionMeta}>
-                      {thread.tags.map((tag, idx) => (
-                        <span key={idx} className={styles.tagPill}>
-                          <span className={styles.tagDotSmall} style={{background: tag.color}}></span> {tag.name}
-                        </span>
-                      ))}
-                      <span>{thread.author} started {thread.time}</span>
+                      <span className={styles.tagPill}>
+                        <span className={styles.tagDotSmall} style={{color: getTagColor(thread.tags)}}></span> {thread.tags}
+                      </span>
+                      <span>By <strong>{thread.first_name}</strong> ({thread.user_type})</span>
+                      <span>• {new Date(thread.created_at).toLocaleDateString()}</span>
+                    </div>
+                    {/* Excerpt of content */}
+                    <div className={styles.discussionContentPreview}>
+                      {thread.content}
                     </div>
                     <div className={styles.discussionStats}>
-                      <span><i className="far fa-comment"></i> {thread.replies}</span>
-                      <span><i className="far fa-eye"></i> {thread.views}</span>
+                      <span><i className="far fa-comment"></i> {thread.replies || 0}</span>
+                      <span><i className="far fa-eye"></i> {thread.views || 0}</span>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
               <div className={styles.emptyState}>
-                <i className="fas fa-search"></i>
+                <i className="fas fa-satellite-dish"></i>
                 <h2>No discussions found.</h2>
-                <p>Try searching for different keywords or clear your filter.</p>
-                <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => setSearchQuery('')}>
-                  Clear Filters
+                <p>Be the first to start a discussion in this tag!</p>
+                <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => {
+                   if (!user) { window.location.href = loginUrl; return; }
+                   setNewTag(searchQuery || 'General'); 
+                   setIsModalOpen(true); 
+                }}>
+                  Start Discussion
                 </button>
               </div>
             )}
@@ -314,14 +343,65 @@ export default function Home() {
         </main>
       </div>
 
-      {/* FOOTER (Flarum Style) */}
+      {/* START DISCUSSION MODAL */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Create Discussion</h2>
+              <button className={styles.modalClose} onClick={() => setIsModalOpen(false)}><i className="fas fa-times"></i></button>
+            </div>
+            <form onSubmit={submitDiscussion}>
+              <div className={styles.modalInputGroup}>
+                <label>Discussion Title</label>
+                <input 
+                  type="text" 
+                  className={styles.modalInput} 
+                  placeholder="What's on your mind?" 
+                  value={newTitle} 
+                  onChange={(e) => setNewTitle(e.target.value)} 
+                  required 
+                  maxLength={100}
+                />
+              </div>
+              <div className={styles.modalInputGroup}>
+                <label>Select Tag</label>
+                <select className={styles.modalSelect} value={newTag} onChange={(e) => setNewTag(e.target.value)}>
+                  <option value="Newsroom">Newsroom</option>
+                  <option value="VIP Tiers">VIP Tiers</option>
+                  <option value="My Squad">My Squad</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+              <div className={styles.modalInputGroup}>
+                <label>Content</label>
+                <textarea 
+                  className={styles.modalTextarea} 
+                  placeholder="Type your message here..." 
+                  value={newContent} 
+                  onChange={(e) => setNewContent(e.target.value)} 
+                  required
+                ></textarea>
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" className={styles.btnCancel} onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className={styles.btnSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? <><i className="fas fa-spinner fa-spin"></i> Posting...</> : 'Post Discussion'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
       <footer className={styles.footer}>
         <div>
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Use</a>
           <a href="#">Refund Policy</a>
         </div>
-        <div style={{marginTop: '1rem'}}>
+        <div style={{marginTop: '1.5rem', opacity: 0.7}}>
           &copy; {new Date().getFullYear()} Novaira Global.
         </div>
       </footer>
