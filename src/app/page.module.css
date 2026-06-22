@@ -1,0 +1,413 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 800;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Auth Buttons */
+.btnLogin {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btnLogin:hover {
+  background: var(--bg-tertiary);
+}
+
+.btnRegister {
+  padding: 0.5rem 1rem;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: 8px;
+  font-weight: 800;
+  transition: all 0.2s;
+}
+
+.btnRegister:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+}
+
+/* User Dropdown UI */
+.userMenuWrapper {
+  position: relative;
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.userBtn:hover {
+  background: var(--bg-tertiary);
+}
+
+.userAvatar {
+  width: 28px;
+  height: 28px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dropdownHeader {
+  padding: 1rem;
+}
+
+.userTier {
+  font-size: 0.7rem;
+  color: var(--tier-gold);
+  font-family: var(--font-dot);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 0;
+}
+
+.dropdownItem {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.dropdownItem:hover {
+  background: var(--bg-tertiary);
+}
+
+.textRed {
+  color: var(--accent-red);
+}
+
+/* Rest of UI */
+.hero {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  background: linear-gradient(180deg, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroSubtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: 4rem;
+}
+
+.sectionHeader {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-family: var(--font-dot);
+  letter-spacing: 1px;
+}
+
+/* Tiers Grid */
+.tiersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.tierCard {
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.tierCard:hover {
+  transform: translateY(-5px);
+}
+
+.tierBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.tierBronze .tierBadge { background: var(--tier-bronze); box-shadow: 0 0 10px var(--tier-bronze); }
+.tierSilver .tierBadge { background: var(--tier-silver); box-shadow: 0 0 10px var(--tier-silver); }
+.tierGold .tierBadge { background: var(--tier-gold); box-shadow: 0 0 10px var(--tier-gold); }
+.tierDiamond .tierBadge { background: var(--tier-diamond); box-shadow: 0 0 10px var(--tier-diamond); }
+
+.tierName {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.tierDesc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.tierPerk {
+  font-size: 0.85rem;
+  font-family: var(--font-dot);
+  color: var(--text-primary);
+}
+
+/* Calculator */
+.calcBox {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.calcControls label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.slider {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  accent-color: var(--text-primary);
+}
+
+.calcResult {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px dashed var(--border-color);
+}
+
+.resultAmount {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 1rem 0;
+  color: var(--accent-blue);
+  text-shadow: 0 0 20px rgba(0, 112, 243, 0.4);
+}
+
+/* Vault */
+.vault {
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.vaultLock {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.vaultTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.vaultDesc {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.vaultProgress {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.progressDot {
+  width: 40px;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.progressDot.active {
+  background: var(--text-primary);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+/* Squad */
+.squadGrid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.squadPanel {
+  padding: 2rem;
+}
+
+.squadTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.squadMembers {
+  display: flex;
+  gap: -10px;
+  margin-bottom: 1.5rem;
+}
+
+.squadAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-dot);
+  font-size: 0.8rem;
+}
+
+/* Hall of Fame */
+.fameGrid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  align-items: flex-end;
+}
+
+.famePodium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+}
+
+.fameAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.famePodium:nth-child(2) .fameAvatar { border-color: var(--tier-gold); width: 100px; height: 100px; }
+
+.fameBox {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  text-align: center;
+  padding-top: 1rem;
+  font-family: var(--font-dot);
+}
+
+.famePodium:nth-child(1) .fameBox { height: 100px; }
+.famePodium:nth-child(2) .fameBox { height: 140px; background: linear-gradient(180deg, rgba(255, 215, 0, 0.1), transparent); }
+.famePodium:nth-child(3) .fameBox { height: 80px; }
+
+@media (max-width: 768px) {
+  .calcBox {
+    grid-template-columns: 1fr;
+  }
+  .squadGrid {
+    grid-template-columns: 1fr;
+  }
+}

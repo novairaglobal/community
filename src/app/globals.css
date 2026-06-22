@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@300;400;600;800&display=swap');
+
+:root {
+  --bg-primary: #050505;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #555555;
+  
+  --accent-red: #ea3323;
+  --accent-blue: #0070f3;
+  
+  --tier-bronze: #cd7f32;
+  --tier-silver: #c0c0c0;
+  --tier-gold: #ffd700;
+  --tier-diamond: #b9f2ff;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-dot: 'DotGothic16', sans-serif;
+
+  --border-color: #333;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  background-image: radial-gradient(var(--bg-tertiary) 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.dot-text {
+  font-family: var(--font-dot);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
