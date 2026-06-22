@@ -58,7 +58,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
-  const [user, setUser] = useState<{ name: string; tier: string } | null>(null);
+  const [user, setUser] = useState<{ id: string | number; name: string; tier: string } | null>(null);
 
   const ACCOUNTS_URL = 'https://accounts.novairasolution.com';
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -78,11 +78,11 @@ export default function Home() {
         });
         const data = await res.json();
         if (data && data.status === 'success') {
-          setUser({ name: data.user.first_name, tier: data.user.user_type });
+          setUser({ id: data.user.id, name: data.user.first_name, tier: data.user.user_type });
         }
       } catch (err) {
         // Fallback for demo
-        setUser({ name: 'Admin', tier: 'Diamond' }); // Force logged in for demo of dropdown
+        setUser({ id: '100000', name: 'Admin', tier: 'Diamond' }); // Force logged in for demo of dropdown
       }
     };
     checkSession();
@@ -175,7 +175,8 @@ export default function Home() {
                 <div className={styles.dropdownMenu}>
                   <div className={styles.dropdownHeader}>
                     <h4>{user.name}</h4>
-                    <span>{user.tier} Agent</span>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>UID: {user.id}</div>
+                    <span>{user.tier} Account</span>
                   </div>
                   <a href="#" className={styles.dropdownItem}><i className="far fa-user"></i> My Profile</a>
                   <a href="#" className={styles.dropdownItem}><i className="fas fa-cog"></i> Settings</a>
