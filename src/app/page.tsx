@@ -9,10 +9,7 @@ interface Discussion {
   views: number; created_at: string; replies?: number;
 }
 
-const INITIAL_NOTIFS = [
-  { id: 1, text: 'Welcome to Novaira Community! 🎉', time: 'Just now', read: false },
-  { id: 2, text: 'Deep Green Update is now live 🌿', time: '5m ago', read: false },
-];
+const INITIAL_NOTIFS: any[] = [];
 
 export default function Home() {
   const router = useRouter();
@@ -82,6 +79,23 @@ export default function Home() {
   const getTagColor = (tag: string) => ({ Newsroom: '#00b84c', 'VIP Tiers': '#f5a623', 'My Squad': '#0070f3' } as Record<string, string>)[tag] || '#8b5cf6';
 
   const filteredDiscussions = activeTag ? discussions.filter(d => d.tags.includes(activeTag)) : discussions;
+
+  // --- REAL DATA CALCULATIONS FOR WIDGETS ---
+  const trendingDiscussions = [...discussions].sort((a, b) => b.views - a.views).slice(0, 3);
+  
+  const authorCounts = discussions.reduce((acc, d) => {
+    acc[d.first_name] = (acc[d.first_name] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const topContributors = Object.entries(authorCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  const totalViews = discussions.reduce((acc, d) => acc + d.views, 0);
+  const totalAuthors = Object.keys(authorCounts).length;
+
 
   return (
     <div className={styles.app}>
@@ -259,70 +273,60 @@ export default function Home() {
         {/* 3. RIGHT SIDEBAR (Desktop Only Extra Content) */}
         <aside className={styles.rightSidebar}>
           
-          {/* Top Contributors Widget */}
+          {/* Top Contributors Widget (Real Data) */}
           <div className={styles.widgetCard}>
             <div className={styles.widgetTitle}><i className="fas fa-trophy" style={{ color: '#f5a623' }}></i> Top Contributors</div>
             <div className={styles.widgetList}>
-              <div className={styles.widgetItem}>
-                <div className={`${styles.widgetItemAvatar} ${styles.user}`}>A</div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Aarav Sharma</div>
-                  <div className={styles.widgetItemSub}>VIP Squad • 234 posts</div>
+              {topContributors.length === 0 ? (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No contributors yet.</div>
+              ) : topContributors.map((c, idx) => (
+                <div key={idx} className={styles.widgetItem} onClick={() => router.push(`/profile?user=${encodeURIComponent(c.name)}`)}>
+                  <div className={`${styles.widgetItemAvatar} ${styles.user}`}>{c.name.charAt(0).toUpperCase()}</div>
+                  <div className={styles.widgetItemBody}>
+                    <div className={styles.widgetItemTitle}>{c.name}</div>
+                    <div className={styles.widgetItemSub}>{c.count} discussions</div>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.widgetItem}>
-                <div className={`${styles.widgetItemAvatar} ${styles.user}`}>S</div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Sarah Khan</div>
-                  <div className={styles.widgetItemSub}>Novaira Admin</div>
-                </div>
-              </div>
-              <div className={styles.widgetItem}>
-                <div className={`${styles.widgetItemAvatar} ${styles.user}`}>R</div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Rahul Dev</div>
-                  <div className={styles.widgetItemSub}>General • 89 posts</div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Trending Discussions Widget */}
+          {/* Trending Discussions Widget (Real Data) */}
           <div className={styles.widgetCard}>
             <div className={styles.widgetTitle}><i className="fas fa-fire" style={{ color: '#ff4d4f' }}></i> Trending Now</div>
             <div className={styles.widgetList}>
-              <div className={styles.widgetItem}>
-                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Novaira Deep Green Update details</div>
-                  <div className={styles.widgetItemSub}>1.2k views • Newsroom</div>
-                </div>
-              </div>
-              <div className={styles.widgetItem}>
-                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Best practices for React 19</div>
-                  <div className={styles.widgetItemSub}>850 views • My Squad</div>
-                </div>
-              </div>
+              {trendingDiscussions.length === 0 ? (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No trending posts.</div>
+              ) : trendingDiscussions.map((d) => {
+                const targetHash = d.post_hash || `post_${d.id}aBcDeFgHiJkLmNo`;
+                return (
+                  <div key={d.id} className={styles.widgetItem} onClick={() => router.push(`/d/${targetHash}`)}>
+                    <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
+                    <div className={styles.widgetItemBody}>
+                      <div className={styles.widgetItemTitle}>{d.title}</div>
+                      <div className={styles.widgetItemSub}>{d.views} views • {d.tags}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Community Stats Widget */}
+          {/* Community Stats Widget (Real Data) */}
           <div className={styles.widgetCard}>
             <div className={styles.widgetTitle}><i className="fas fa-chart-line" style={{ color: 'var(--brand-green)' }}></i> Community Stats</div>
             <div className={styles.statsGrid}>
               <div className={styles.statBox}>
                 <div className={styles.statNum}>{discussions.length}</div>
-                <div className={styles.statLabel}>Posts</div>
+                <div className={styles.statLabel}>Discussions</div>
               </div>
               <div className={styles.statBox}>
-                <div className={styles.statNum}>1.2k</div>
-                <div className={styles.statLabel}>Members</div>
+                <div className={styles.statNum}>{totalAuthors}</div>
+                <div className={styles.statLabel}>Authors</div>
               </div>
               <div className={styles.statBox} style={{ gridColumn: 'span 2' }}>
-                <div className={styles.statNum} style={{ color: 'var(--brand-green)' }}>142</div>
-                <div className={styles.statLabel}>Online Now</div>
+                <div className={styles.statNum} style={{ color: 'var(--brand-green)' }}>{totalViews}</div>
+                <div className={styles.statLabel}>Total Views</div>
               </div>
             </div>
           </div>

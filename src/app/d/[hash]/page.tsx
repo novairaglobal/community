@@ -16,10 +16,7 @@ interface Reaction { emoji: string; count: number; active: boolean; }
 
 const DEFAULT_EMOJIS = ['👍', '❤️', '😂', '😮', '🔥'];
 const MORE_EMOJIS = ['😢', '😡', '🎉', '🙏', '💯', '👏', '🤔', '😍', '💪', '🚀', '⭐', '💚'];
-const INITIAL_NOTIFS = [
-  { id: 1, text: 'Welcome to Novaira Community! 🎉', time: 'Just now', read: false },
-  { id: 2, text: 'Deep Green Update is now live 🌿', time: '5m ago', read: false },
-];
+const INITIAL_NOTIFS: any[] = [];
 
 export default function PostNativePage() {
   const router = useRouter();
@@ -33,6 +30,7 @@ export default function PostNativePage() {
   const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   const [user, setUser] = useState<{ id: string | number; name: string; tier: string } | null>(null);
   const [post, setPost] = useState<Discussion | null>(null);
+  const [allDiscussions, setAllDiscussions] = useState<Discussion[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -72,6 +70,7 @@ export default function PostNativePage() {
         const res = await fetch(`${API_URL}?action=fetch`, { credentials: 'include' });
         const data = await res.json();
         if (data?.status === 'success') {
+          setAllDiscussions(data.data);
           const found = data.data.find((d: Discussion) => {
             const dbHash = (d.post_hash || '').trim();
             return dbHash === hash || `post_${d.id}aBcDeFgHiJkLmNo` === hash;
@@ -166,6 +165,10 @@ export default function PostNativePage() {
 
   const topLevelComments = comments.filter(c => !c.parent_id);
   const getReplies = (parentId: number) => comments.filter(c => c.parent_id === parentId);
+
+  // --- REAL DATA FOR WIDGETS ---
+  const trendingDiscussions = [...allDiscussions].sort((a, b) => b.views - a.views).slice(0, 3);
+
 
   if (isLoading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--brand-green)', fontSize: '2rem' }}>
@@ -443,20 +446,20 @@ export default function PostNativePage() {
           <div className={styles.widgetCard}>
             <div className={styles.widgetTitle}><i className="fas fa-fire" style={{ color: '#ff4d4f' }}></i> Trending Now</div>
             <div className={styles.widgetList}>
-              <div className={styles.widgetItem}>
-                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Novaira Deep Green Update details</div>
-                  <div className={styles.widgetItemSub}>1.2k views • Newsroom</div>
-                </div>
-              </div>
-              <div className={styles.widgetItem}>
-                <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
-                <div className={styles.widgetItemBody}>
-                  <div className={styles.widgetItemTitle}>Best practices for React 19</div>
-                  <div className={styles.widgetItemSub}>850 views • My Squad</div>
-                </div>
-              </div>
+              {trendingDiscussions.length === 0 ? (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No trending posts.</div>
+              ) : trendingDiscussions.map((d) => {
+                const targetHash = d.post_hash || `post_${d.id}aBcDeFgHiJkLmNo`;
+                return (
+                  <div key={d.id} className={styles.widgetItem} onClick={() => router.push(`/d/${targetHash}`)}>
+                    <div className={styles.widgetItemAvatar}><i className="fas fa-hashtag"></i></div>
+                    <div className={styles.widgetItemBody}>
+                      <div className={styles.widgetItemTitle}>{d.title}</div>
+                      <div className={styles.widgetItemSub}>{d.views} views • {d.tags}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </aside>
