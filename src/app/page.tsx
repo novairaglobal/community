@@ -110,9 +110,9 @@ export default function Home() {
     try {
       const res = await fetch(`${API_URL}?action=create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          user_id: user.id.toString(),
           first_name: user.name,
           user_type: user.tier,
           title: newTitle,
