@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import styles from '../../page.module.css';
 
 interface Discussion {
@@ -18,8 +18,11 @@ interface Discussion {
   replies?: number;
 }
 
-export default function PostPage({ params }: { params: { hash: string } }) {
+export default function PostPage() {
   const router = useRouter();
+  const params = useParams();
+  const hash = params.hash as string;
+  
   const [theme, setTheme] = useState('dark');
   const [post, setPost] = useState<Discussion | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,13 +44,16 @@ export default function PostPage({ params }: { params: { hash: string } }) {
         if (data && data.status === 'success') {
           // Find the specific post by hash OR fallback ID hash for older posts
           const found = data.data.find((d: Discussion) => {
-            const currentHash = d.post_hash || `post_${d.id}aBcDeFgHiJkLmNo`;
-            return currentHash === params.hash;
+            const dbHash = (d.post_hash || '').trim();
+            const fallbackHash = `post_${d.id}aBcDeFgHiJkLmNo`;
+            return dbHash === hash || fallbackHash === hash || String(d.id) === hash;
           });
+          
           if (found) {
             setPost(found);
           } else {
-            console.warn('Post not found for hash:', params.hash);
+            console.warn('Post not found for hash:', hash);
+            console.log('Available posts:', data.data);
           }
         }
       } catch (err) {
@@ -57,7 +63,7 @@ export default function PostPage({ params }: { params: { hash: string } }) {
     };
 
     fetchPost();
-  }, [params.hash]);
+  }, [hash]);
 
   const getTagColor = (tagName: string) => {
     if (tagName === 'Newsroom') return '#00b84c';
