@@ -39,13 +39,15 @@ export default function PostPage({ params }: { params: { hash: string } }) {
         });
         const data = await res.json();
         if (data && data.status === 'success') {
-          // Find the specific post by hash
-          const found = data.data.find((d: Discussion) => d.post_hash === params.hash);
+          // Find the specific post by hash OR fallback ID hash for older posts
+          const found = data.data.find((d: Discussion) => {
+            const currentHash = d.post_hash || `post_${d.id}aBcDeFgHiJkLmNo`;
+            return currentHash === params.hash;
+          });
           if (found) {
             setPost(found);
           } else {
-            // Fallback if hash doesn't match (maybe it's old data without hash)
-            // Or just show 404
+            console.warn('Post not found for hash:', params.hash);
           }
         }
       } catch (err) {
