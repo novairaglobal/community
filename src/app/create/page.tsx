@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from '../../page.module.css';
+import styles from '../page.module.css';
 
 interface Discussion {
   id: number;
