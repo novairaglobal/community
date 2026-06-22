@@ -177,7 +177,13 @@ export default function Home() {
                 <div className={styles.dropdownMenu}>
                   <div className={styles.dropdownHeader}>
                     <h4>{user.name}</h4>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>UID: {user.id}</div>
+                    <div style={{ 
+                      fontSize: 'clamp(0.55rem, 4vw, 0.75rem)', 
+                      color: 'var(--text-muted)', 
+                      marginBottom: '0.25rem',
+                      whiteSpace: 'nowrap',
+                      letterSpacing: '-0.5px'
+                    }}>UID: {user.id}</div>
                     <span>{user.tier} Account</span>
                   </div>
                   <a href="#" className={styles.dropdownItem}><i className="far fa-user"></i> My Profile</a>
