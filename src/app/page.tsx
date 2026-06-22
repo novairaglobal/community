@@ -28,6 +28,9 @@ export default function Home() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Navigation State
+  const [isCreating, setIsCreating] = useState(false);
+  
   const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   const [user, setUser] = useState<{ id: string | number; name: string; tier: string } | null>(null);
 
@@ -226,9 +229,10 @@ export default function Home() {
         <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
           <button className={styles.btnStartDiscussion} onClick={() => {
             if (!user) { window.location.href = loginUrl; return; }
+            setIsCreating(true);
             router.push('/create');
-          }}>
-            <i className="fas fa-edit"></i> Start a Discussion
+          }} disabled={isCreating}>
+            {isCreating ? <><i className="fas fa-spinner fa-spin"></i> Loading...</> : <><i className="fas fa-edit"></i> Start a Discussion</>}
           </button>
 
           <div className={styles.navGroup}>
@@ -310,9 +314,10 @@ export default function Home() {
                 <p>Be the first to start a discussion in this tag!</p>
                 <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => {
                    if (!user) { window.location.href = loginUrl; return; }
+                   setIsCreating(true);
                    router.push('/create');
-                }}>
-                  Start Discussion
+                }} disabled={isCreating}>
+                  {isCreating ? <><i className="fas fa-spinner fa-spin"></i> Loading...</> : 'Start Discussion'}
                 </button>
               </div>
             )}
