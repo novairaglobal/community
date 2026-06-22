@@ -79,10 +79,12 @@ export default function Home() {
         const data = await res.json();
         if (data && data.status === 'success') {
           setUser({ id: data.user.id, name: data.user.first_name, tier: data.user.user_type });
+        } else {
+          setUser(null);
         }
       } catch (err) {
-        // Fallback for demo
-        setUser({ id: '100000', name: 'Admin', tier: 'Diamond' }); // Force logged in for demo of dropdown
+        console.error('Session check error:', err);
+        setUser(null);
       }
     };
     checkSession();
