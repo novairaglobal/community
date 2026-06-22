@@ -254,70 +254,99 @@ export default function PostNativePage() {
           </div>
         </aside>
 
-        {/* CONTENT AREA (NATIVE APP POST VIEW) */}
-        <main className={styles.content}>
-          <button className={styles.btnBack} onClick={() => router.push('/')} style={{marginBottom: '1rem'}}>
-            <i className="fas fa-arrow-left"></i> Back to Feed
+        {/* CONTENT AREA (MATERIAL 3 NATIVE POST VIEW) */}
+        <main className={styles.content} style={{paddingBottom: '90px'}}>
+          <button className={styles.btnBack} onClick={() => router.back()} style={{marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', padding: '0.5rem 0'}}>
+            <i className="fas fa-arrow-left" style={{color: 'var(--brand-green)'}}></i> Back
           </button>
 
+          {/* POST CARD - Material 3 */}
           <div className={styles.postNativeContainer}>
+            {/* Author Row */}
             <div className={styles.postHeaderArea}>
               <div className={styles.deepAvatar}>{post.first_name.charAt(0).toUpperCase()}</div>
-              <div>
-                <h1 className={styles.deepTitle}>{post.title}</h1>
-                <div className={styles.discussionMeta}>
-                  <span className={styles.tagPill}><span className={styles.tagDotSmall} style={{color: getTagColor(post.tags)}}></span> {post.tags}</span>
-                  <span>By <strong>{post.first_name}</strong></span>
-                  <span>{new Date(post.created_at).toLocaleString()}</span>
-                  <span><i className="far fa-eye"></i> {post.views + 1} views</span>
-                </div>
+              <div style={{flex: 1, minWidth: 0}}>
+                <div style={{fontWeight: 600, color: 'var(--text-primary)', fontSize: '1rem'}}>{post.first_name}</div>
+                <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>{new Date(post.created_at).toLocaleString()}</div>
               </div>
+              <span className={styles.tagPill} style={{background: getTagColor(post.tags) + '20', color: getTagColor(post.tags), border: `1px solid ${getTagColor(post.tags)}40`, borderRadius: '100px', padding: '0.25rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0}}>{post.tags}</span>
             </div>
 
+            {/* Title */}
+            <h1 className={styles.deepTitle}>{post.title}</h1>
+
+            {/* Content */}
             <div className={styles.postContentArea}>{post.content}</div>
 
+            {/* Stats Row */}
+            <div style={{display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', marginBottom: '2rem'}}>
+              <span><i className="far fa-eye" style={{marginRight: '0.4rem'}}></i>{post.views} views</span>
+              <span><i className="far fa-comment" style={{marginRight: '0.4rem'}}></i>{comments.length} comments</span>
+            </div>
+
             {/* COMMENTS SECTION */}
-            <div className={styles.commentsSection}>
-              <h3>Comments ({comments.length})</h3>
-              
-              <div className={styles.commentList} style={{marginBottom: '2rem'}}>
-                {comments.length === 0 ? (
-                  <p style={{color: 'var(--text-muted)'}}>No comments yet. Be the first to comment!</p>
-                ) : (
-                  comments.map(c => (
-                    <div key={c.id} className={styles.comment}>
-                      <div className={styles.commentAvatar} style={{background: 'linear-gradient(135deg, #333, #000)'}}>{c.first_name.charAt(0).toUpperCase()}</div>
-                      <div className={styles.commentBody}>
-                        <h4>{c.first_name} <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>{new Date(c.created_at).toLocaleDateString()}</span></h4>
-                        <p>{c.content}</p>
-                      </div>
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem'}}>
+              <h3 style={{margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)'}}>Comments</h3>
+              <span style={{background: 'var(--brand-green)', color: '#fff', borderRadius: '100px', padding: '0.1rem 0.6rem', fontSize: '0.75rem', fontWeight: 700}}>{comments.length}</span>
+            </div>
+
+            <div className={styles.commentList}>
+              {comments.length === 0 ? (
+                <div style={{textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)'}}>
+                  <i className="far fa-comment-dots" style={{fontSize: '2rem', marginBottom: '0.5rem', display: 'block', opacity: 0.4}}></i>
+                  No comments yet. Be the first to comment!
+                </div>
+              ) : (
+                comments.map(c => (
+                  <div key={c.id} className={styles.comment}>
+                    <div className={styles.commentAvatar} style={{
+                      background: 'linear-gradient(135deg, var(--brand-green), #059669)',
+                      width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 700, fontSize: '1rem'
+                    }}>
+                      {c.first_name.charAt(0).toUpperCase()}
                     </div>
-                  ))
-                )}
-              </div>
-
-              {/* STICKY BOTTOM COMMENT BAR (MOBILE) */}
-              <form className={styles.stickyCommentBar} onSubmit={submitComment}>
-                {user ? (
-                  <div className={styles.commentAvatar} style={{background: 'var(--brand-green)', width: '36px', height: '36px', fontSize: '0.9rem'}}>{user.name.charAt(0).toUpperCase()}</div>
-                ) : null}
-                <input 
-                  type="text" 
-                  className={styles.stickyCommentInput} 
-                  placeholder={user ? "Write a comment..." : "Log in to comment"} 
-                  value={newComment} 
-                  onChange={(e) => setNewComment(e.target.value)} 
-                  disabled={!user || isCommenting}
-                />
-                <button type="submit" className={styles.btnSendComment} disabled={!user || isCommenting || !newComment.trim()}>
-                  {isCommenting ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
-                </button>
-              </form>
-
+                    <div className={styles.commentBody} style={{
+                      background: 'var(--bg-secondary)', borderRadius: '16px', padding: '0.75rem 1rem', flex: 1
+                    }}>
+                      <div style={{fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem', color: 'var(--text-primary)'}}>
+                        {c.first_name}
+                        <span style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem', fontWeight: 400}}>{new Date(c.created_at).toLocaleString()}</span>
+                      </div>
+                      <p style={{margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem'}}>{c.content}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </main>
       </div>
+
+      {/* STICKY COMMENT BAR - ALWAYS FIXED TO DEVICE BOTTOM */}
+      <form className={styles.stickyCommentBar} onSubmit={submitComment}>
+        {user ? (
+          <div style={{
+            width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+            background: 'var(--brand-green)', color: '#fff', fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem'
+          }}>
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+        ) : null}
+        <input
+          type="text"
+          className={styles.stickyCommentInput}
+          placeholder={user ? 'Write a comment...' : 'Log in to comment'}
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          disabled={!user || isCommenting}
+        />
+        <button type="submit" className={styles.btnSendComment} disabled={!user || isCommenting || !newComment.trim()}>
+          {isCommenting ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+        </button>
+      </form>
     </div>
   );
 }
