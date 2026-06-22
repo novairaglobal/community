@@ -51,7 +51,10 @@ export default function PostNativePage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
+
   useEffect(() => {
+    setCurrentUrl(window.location.href);
     const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
@@ -144,8 +147,9 @@ export default function PostNativePage() {
     localStorage.setItem('theme', newTheme);
   };
 
-  const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(window.location.origin + `/d/${hash}`)}`;
-  const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(window.location.origin)}`;
+  const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(currentUrl)}`;
+  const registerUrl = `${ACCOUNTS_URL}/?registration=individual&redirect=${encodeURIComponent(currentUrl)}`;
+  const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
 
   const getTagColor = (tagName: string) => {
     if (tagName === 'Newsroom') return '#00b84c';
