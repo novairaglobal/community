@@ -8,6 +8,7 @@ export default function Home() {
   const [friends, setFriends] = useState(15);
   const [tasks, setTasks] = useState(10);
   const [income, setIncome] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   const [user, setUser] = useState<{ name: string; tier: string } | null>(null);
@@ -51,6 +52,17 @@ export default function Home() {
     localStorage.setItem('theme', newTheme);
   };
 
+  // Sync mobile status bar color with the theme
+  useEffect(() => {
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.setAttribute('content', theme === 'dark' ? '#161317' : '#ffffff');
+  }, [theme]);
+
   const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(currentUrl)}`;
   const registerUrl = `${ACCOUNTS_URL}/?registration=individual&redirect=${encodeURIComponent(currentUrl)}`;
   const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
@@ -61,7 +73,9 @@ export default function Home() {
       {/* HEADER (Flarum Clone) */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <button className={styles.hamburger}><i className="fas fa-bars"></i></button>
+          <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+          </button>
           <div className={styles.logo}>
             Novaira <span className={styles.logoDot}>Community</span>
           </div>
@@ -92,18 +106,21 @@ export default function Home() {
       {/* MAIN CONTAINER */}
       <div className={styles.container}>
         
+        {/* Mobile Overlay */}
+        <div className={`${styles.sidebarOverlay} ${mobileMenuOpen ? styles.open : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+
         {/* SIDEBAR (Flarum Tags Navigation) */}
-        <aside className={styles.sidebar}>
-          <button className={styles.btnStartDiscussion}>
+        <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
+          <button className={styles.btnStartDiscussion} onClick={() => setMobileMenuOpen(false)}>
             <i className="fas fa-edit"></i> Start a Discussion
           </button>
 
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
-              <a href="#" className={`${styles.navItem} ${styles.active}`}>
+              <a href="#" className={`${styles.navItem} ${styles.active}`} onClick={() => setMobileMenuOpen(false)}>
                 <i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions
               </a>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <i className={`far fa-star ${styles.navIcon}`}></i> Following
               </a>
             </div>
@@ -112,19 +129,19 @@ export default function Home() {
           <div className={styles.navGroup}>
             <div className={styles.navGroupTitle}>Tags</div>
             <div className={styles.navMenu}>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <span className={styles.tagDot} style={{background: '#d71921'}}></span> Newsroom
               </a>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <span className={styles.tagDot} style={{background: '#0070f3'}}></span> Gamification Hub
               </a>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <span className={styles.tagDot} style={{background: '#10b981'}}></span> VIP Tiers
               </a>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <span className={styles.tagDot} style={{background: '#f5a623'}}></span> My Squad
               </a>
-              <a href="#" className={styles.navItem}>
+              <a href="#" className={styles.navItem} onClick={() => setMobileMenuOpen(false)}>
                 <span className={styles.tagDot} style={{background: '#666666'}}></span> Everything Else
               </a>
             </div>
