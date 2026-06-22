@@ -16,7 +16,6 @@ interface Reaction { emoji: string; count: number; active: boolean; }
 
 const DEFAULT_EMOJIS = ['👍', '❤️', '😂', '😮', '🔥'];
 const MORE_EMOJIS = ['😢', '😡', '🎉', '🙏', '💯', '👏', '🤔', '😍', '💪', '🚀', '⭐', '💚'];
-
 const INITIAL_NOTIFS = [
   { id: 1, text: 'Welcome to Novaira Community! 🎉', time: 'Just now', read: false },
   { id: 2, text: 'Deep Green Update is now live 🌿', time: '5m ago', read: false },
@@ -120,10 +119,7 @@ export default function PostNativePage() {
         })
       });
       const data = await res.json();
-      if (data?.status === 'success') {
-        setNewComment(''); setReplyingTo(null);
-        fetchComments(targetHash);
-      }
+      if (data?.status === 'success') { setNewComment(''); setReplyingTo(null); fetchComments(targetHash); }
     } catch { alert('Failed to post comment.'); }
     setIsCommenting(false);
   };
@@ -136,8 +132,7 @@ export default function PostNativePage() {
 
   const toggleReaction = (emoji: string) => {
     setReactions(prev => prev.map(r => r.emoji === emoji
-      ? { ...r, count: r.active ? r.count - 1 : r.count + 1, active: !r.active }
-      : r
+      ? { ...r, count: r.active ? r.count - 1 : r.count + 1, active: !r.active } : r
     ));
   };
 
@@ -159,7 +154,6 @@ export default function PostNativePage() {
   const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
   const getTagColor = (tag: string) => ({ Newsroom: '#00b84c', 'VIP Tiers': '#f5a623', 'My Squad': '#0070f3' } as Record<string, string>)[tag] || '#8b5cf6';
 
-  // Organize: top-level comments + replies
   const topLevelComments = comments.filter(c => !c.parent_id);
   const getReplies = (parentId: number) => comments.filter(c => c.parent_id === parentId);
 
@@ -171,14 +165,22 @@ export default function PostNativePage() {
   if (!post) return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '1rem', color: 'var(--text-primary)' }}>
       <i className="fas fa-ghost" style={{ fontSize: '3rem', opacity: 0.3 }}></i>
-      <h1>Post not found.</h1>
+      <h1 style={{ fontSize: '1.2rem' }}>Post not found.</h1>
       <button onClick={() => router.push('/')} style={{ padding: '0.6rem 1.5rem', background: 'var(--brand-green)', color: '#fff', border: 'none', borderRadius: '100px', cursor: 'pointer', fontWeight: 700 }}>← Back to Community</button>
     </div>
   );
 
   return (
-    <div className={styles.app}>
-      {/* HEADER */}
+    /*
+      NATIVE APP SHELL LAYOUT:
+      postPageApp  = height:100vh + overflow:hidden (outer shell, never scrolls)
+      header       = flex-shrink:0 (always visible at top)
+      postScrollBody = flex:1 + overflow-y:auto (ONLY this scrolls)
+      stickyCommentBar = flex-shrink:0 (always visible at bottom)
+    */
+    <div className={styles.postPageApp}>
+
+      {/* ══ HEADER ══ */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -195,7 +197,9 @@ export default function PostNativePage() {
           </div>
         </div>
         <div className={styles.headerRight}>
-          <button onClick={toggleTheme} className={styles.themeToggle}><i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i></button>
+          <button onClick={toggleTheme} className={styles.themeToggle}>
+            <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+          </button>
           {user ? (
             <>
               <div className={styles.notificationWrapper} ref={notifRef}>
@@ -209,10 +213,9 @@ export default function PostNativePage() {
                       <span className={styles.notifHeaderTitle}>Notifications</span>
                       <a className={styles.notifHeaderLink} onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}>Mark all</a>
                     </div>
-                    {notifications.filter(n => !n.read).length === 0 ? (
-                      <div className={styles.notifEmpty}>All caught up! 🎉</div>
-                    ) : (
-                      notifications.filter(n => !n.read).slice(0, 5).map(n => (
+                    {notifications.filter(n => !n.read).length === 0
+                      ? <div className={styles.notifEmpty}>All caught up! 🎉</div>
+                      : notifications.filter(n => !n.read).slice(0, 5).map(n => (
                         <div key={n.id} className={styles.notifItem} onClick={() => markRead(n.id)}>
                           <div className={styles.notifDot}></div>
                           <div className={styles.notifContent}>
@@ -222,7 +225,7 @@ export default function PostNativePage() {
                           <button className={styles.notifMarkRead} onClick={e => { e.stopPropagation(); markRead(n.id); }}><i className="fas fa-times"></i></button>
                         </div>
                       ))
-                    )}
+                    }
                     <a href="/notifications" className={styles.notifViewAll}>View all notifications →</a>
                   </div>
                 )}
@@ -237,7 +240,6 @@ export default function PostNativePage() {
                   <div className={styles.dropdownMenu}>
                     <div className={styles.dropdownHeader}><h4>{user.name}</h4><span>UID: {user.id}</span></div>
                     <a href="/profile" className={styles.dropdownItem}><i className="far fa-user"></i> My Profile</a>
-                    <a href="/settings" className={styles.dropdownItem}><i className="fas fa-cog"></i> Settings</a>
                     <div className={styles.dropdownDivider}></div>
                     <a href={logoutUrl} className={styles.dropdownItem} style={{ color: 'var(--brand-green)' }}><i className="fas fa-sign-out-alt"></i> Log Out</a>
                   </div>
@@ -253,8 +255,8 @@ export default function PostNativePage() {
         </div>
       </header>
 
-      {/* MAIN */}
-      <div className={styles.container}>
+      {/* ══ SCROLLABLE BODY — only this area scrolls ══ */}
+      <div className={styles.postScrollBody}>
         <div className={`${styles.sidebarOverlay} ${mobileMenuOpen ? styles.open : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
         <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
           <button className={styles.btnStartDiscussion} onClick={() => { if (!user) { window.location.href = loginUrl; return; } router.push('/create'); }}>
@@ -262,7 +264,9 @@ export default function PostNativePage() {
           </button>
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
-              <button onClick={() => router.push('/')} className={styles.navItem}><i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions</button>
+              <button onClick={() => router.push('/')} className={styles.navItem}>
+                <i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions
+              </button>
             </div>
           </div>
           <div className={styles.navGroup}>
@@ -277,67 +281,67 @@ export default function PostNativePage() {
           </div>
         </aside>
 
-        <main className={styles.content} style={{ paddingBottom: '80px' }}>
-          <button className={styles.btnBack} onClick={() => router.back()}>
-            <i className="fas fa-arrow-left" style={{ color: 'var(--brand-green)' }}></i> Back
-          </button>
+        <div className={styles.postBodyInner}>
+          <main className={styles.content}>
+            <button className={styles.btnBack} onClick={() => router.back()} style={{ marginBottom: '0.75rem' }}>
+              <i className="fas fa-arrow-left" style={{ color: 'var(--brand-green)' }}></i> Back
+            </button>
 
-          <div className={styles.postNativeContainer}>
-            {/* Author Row */}
-            <div className={styles.postHeaderArea}>
-              <div className={styles.deepAvatar}>{post.first_name.charAt(0).toUpperCase()}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{post.first_name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(post.created_at).toLocaleString()}</div>
-              </div>
-              <span style={{ background: `${getTagColor(post.tags)}18`, color: getTagColor(post.tags), border: `1px solid ${getTagColor(post.tags)}40`, borderRadius: '100px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{post.tags}</span>
-            </div>
-
-            <h1 className={styles.deepTitle}>{post.title}</h1>
-            <div className={styles.postContentArea}>{post.content}</div>
-
-            {/* Stats */}
-            <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-muted)', fontSize: '0.82rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.75rem' }}>
-              <span><i className="far fa-eye" style={{ marginRight: '0.3rem' }}></i>{post.views} views</span>
-              <span><i className="far fa-comment" style={{ marginRight: '0.3rem' }}></i>{comments.length} comments</span>
-            </div>
-
-            {/* EMOJI REACTIONS BAR */}
-            <div className={styles.reactionsBar}>
-              {reactions.map(r => (
-                <button key={r.emoji} className={`${styles.reactionBtn} ${r.active ? styles.active : ''}`} onClick={() => toggleReaction(r.emoji)}>
-                  <span>{r.emoji}</span>
-                  {r.count > 0 && <span className={styles.reactionCount}>{r.count}</span>}
-                </button>
-              ))}
-              <div style={{ position: 'relative' }} ref={emojiPanelRef}>
-                <button className={styles.reactionMore} onClick={() => setShowEmojiPanel(!showEmojiPanel)}>
-                  <i className="fas fa-plus"></i>
-                </button>
-                {showEmojiPanel && (
-                  <div className={styles.emojiPanel}>
-                    {MORE_EMOJIS.map(e => (
-                      <button key={e} className={styles.emojiPanelBtn} onClick={() => addNewReaction(e)}>{e}</button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* COMMENTS */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Comments</h3>
-              <span style={{ background: 'var(--brand-green)', color: '#fff', borderRadius: '100px', padding: '0.05rem 0.55rem', fontSize: '0.72rem', fontWeight: 800 }}>{comments.length}</span>
-            </div>
-
-            <div className={styles.commentList}>
-              {topLevelComments.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                  <i className="far fa-comment-dots" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.4rem', opacity: 0.35 }}></i>
-                  No comments yet
+            <div className={styles.postNativeContainer}>
+              {/* Author row */}
+              <div className={styles.postHeaderArea}>
+                <div className={styles.deepAvatar}>{post.first_name.charAt(0).toUpperCase()}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{post.first_name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(post.created_at).toLocaleString()}</div>
                 </div>
-              ) : (
-                topLevelComments.map(c => (
+                <span style={{ background: `${getTagColor(post.tags)}18`, color: getTagColor(post.tags), border: `1px solid ${getTagColor(post.tags)}40`, borderRadius: '100px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{post.tags}</span>
+              </div>
+
+              <h1 className={styles.deepTitle}>{post.title}</h1>
+              <div className={styles.postContentArea}>{post.content}</div>
+
+              {/* Stats */}
+              <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-muted)', fontSize: '0.82rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.75rem' }}>
+                <span><i className="far fa-eye" style={{ marginRight: '0.3rem' }}></i>{post.views} views</span>
+                <span><i className="far fa-comment" style={{ marginRight: '0.3rem' }}></i>{comments.length} comments</span>
+              </div>
+
+              {/* Emoji Reactions */}
+              <div className={styles.reactionsBar}>
+                {reactions.map(r => (
+                  <button key={r.emoji} className={`${styles.reactionBtn} ${r.active ? styles.active : ''}`} onClick={() => toggleReaction(r.emoji)}>
+                    <span>{r.emoji}</span>
+                    {r.count > 0 && <span className={styles.reactionCount}>{r.count}</span>}
+                  </button>
+                ))}
+                <div style={{ position: 'relative' }} ref={emojiPanelRef}>
+                  <button className={styles.reactionMore} onClick={() => setShowEmojiPanel(!showEmojiPanel)}>
+                    <i className="fas fa-plus"></i>
+                  </button>
+                  {showEmojiPanel && (
+                    <div className={styles.emojiPanel}>
+                      {MORE_EMOJIS.map(e => (
+                        <button key={e} className={styles.emojiPanelBtn} onClick={() => addNewReaction(e)}>{e}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Comments */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
+                <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Comments</h3>
+                <span style={{ background: 'var(--brand-green)', color: '#fff', borderRadius: '100px', padding: '0.05rem 0.55rem', fontSize: '0.72rem', fontWeight: 800 }}>{comments.length}</span>
+              </div>
+
+              <div className={styles.commentList}>
+                {topLevelComments.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                    <i className="far fa-comment-dots" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.4rem', opacity: 0.35 }}></i>
+                    No comments yet
+                  </div>
+                ) : topLevelComments.map(c => (
                   <div key={c.id}>
                     <div className={styles.comment}>
                       <div className={styles.commentAvatar}>{c.first_name.charAt(0).toUpperCase()}</div>
@@ -348,11 +352,10 @@ export default function PostNativePage() {
                         </div>
                         <p className={styles.commentText}>{c.content}</p>
                         <div className={styles.commentActions}>
-                          {user && <button className={styles.btnReply} onClick={() => handleReply(c)}>Reply</button>}
+                          {user && <button className={styles.btnReply} onClick={() => handleReply(c)}>↩ Reply</button>}
                         </div>
                       </div>
                     </div>
-                    {/* Nested Replies */}
                     {getReplies(c.id).length > 0 && (
                       <div className={styles.replyThread}>
                         {getReplies(c.id).map(r => (
@@ -370,14 +373,15 @@ export default function PostNativePage() {
                       </div>
                     )}
                   </div>
-                ))
-              )}
+                ))}
+              </div>
+              <div style={{ height: '0.5rem' }}></div>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
-      {/* STICKY COMMENT BAR — always fixed to device bottom */}
+      {/* ══ STICKY COMMENT BAR — flex-shrink:0, never scrolls ══ */}
       <form className={styles.stickyCommentBar} onSubmit={submitComment}>
         {user && (
           <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'var(--brand-green)', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', flexShrink: 0 }}>
@@ -394,7 +398,7 @@ export default function PostNativePage() {
           disabled={!user || isCommenting}
         />
         {replyingTo && (
-          <button type="button" onClick={() => { setReplyingTo(null); setNewComment(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0 }}>
+          <button type="button" onClick={() => { setReplyingTo(null); setNewComment(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0, padding: '0 0.25rem' }}>
             <i className="fas fa-times"></i>
           </button>
         )}
