@@ -112,14 +112,23 @@
 .btnSignup:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 20px rgba(0, 184, 76, 0.4); }
 
 .userDropdownWrapper { position: relative; }
+.userPill {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: rgba(var(--bg-primary-rgb), 0.5); border: 1px solid var(--border-color);
+  padding: 0.3rem 1rem 0.3rem 0.3rem; border-radius: 100px;
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.userPill:hover { background: rgba(0, 184, 76, 0.05); border-color: var(--brand-green); box-shadow: 0 5px 15px rgba(0, 184, 76, 0.2); }
+.userPillName { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
+.userPillArrow { color: var(--text-muted); font-size: 0.8rem; transition: transform 0.3s; }
+.userPill.open .userPillArrow { transform: rotate(180deg); color: var(--brand-green); }
+
 .headerAvatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, var(--brand-green), #059669); color: #fff;
   display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem;
-  cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none;
   box-shadow: 0 4px 10px rgba(0, 184, 76, 0.3);
 }
-.headerAvatar:hover { transform: scale(1.15) rotate(5deg); box-shadow: 0 0 20px rgba(0, 184, 76, 0.6); }
 
 .dropdownMenu {
   position: absolute; top: calc(100% + 15px); right: 0;
@@ -244,20 +253,33 @@
 .discussion:hover .discussionStats span { color: var(--text-primary); }
 
 
-/* ======== DEEP VIEW (POST DETAILS & COMMENTS) ======== */
-.deepViewContainer {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  border: 1px solid rgba(var(--text-primary-rgb), 0.1);
-  box-shadow: 0 40px 100px rgba(0,0,0,0.3), 0 0 40px rgba(0, 184, 76, 0.1);
-  padding: 2.5rem;
-  animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* ======== FULL SCREEN DEEP VIEW (POST DETAILS & COMMENTS) ======== */
+.fullScreenModalOverlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 30, 80, 0.5); /* Low Blue Transparent Effect */
+  backdrop-filter: blur(25px);
+  z-index: 4000; display: flex; justify-content: center; align-items: flex-start;
+  padding: 2.5rem 1rem; overflow-y: auto; perspective: 1500px;
 }
+.fullScreenModalContent {
+  background: var(--bg-primary); width: 100%; max-width: 900px;
+  border-radius: 16px; border: 1px solid rgba(0, 184, 76, 0.2);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 60px rgba(0, 184, 76, 0.1);
+  padding: 3.5rem; position: relative; margin: auto;
+  animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 .btnBack {
   background: transparent; color: var(--text-muted); font-size: 1rem; font-weight: 800;
   display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; cursor: pointer; transition: color 0.3s;
 }
 .btnBack:hover { color: var(--brand-green); transform: translateX(-5px); }
+.btnBackTopRight {
+  position: absolute; top: 1.5rem; right: 1.5rem; width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(var(--text-primary-rgb), 0.05); color: var(--text-muted); font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; border: none;
+}
+.btnBackTopRight:hover { background: rgba(0, 184, 76, 0.1); color: var(--brand-green); transform: rotate(90deg); }
 
 .deepHeader { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2rem; }
 .deepAvatar {
@@ -343,7 +365,9 @@
   .dropdownMenu { position: fixed; top: 65px; right: 10px; width: 240px; }
   .notificationMenu { position: fixed; top: 65px; right: 10px; width: 300px; }
   .discussion { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
-  .deepViewContainer { padding: 1.5rem; }
+  .fullScreenModalOverlay { padding: 0; }
+  .fullScreenModalContent { border-radius: 0; min-height: 100vh; padding: 1.5rem; border: none; }
+  .btnBackTopRight { top: 1rem; right: 1rem; }
   .deepHeader { flex-direction: column; gap: 1rem; }
   .commentForm { flex-direction: column; }
 }

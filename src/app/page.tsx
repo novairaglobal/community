@@ -13,6 +13,7 @@ interface Discussion {
   tags: string;
   views: number;
   created_at: string;
+  post_hash?: string; // New 16 char unique hash
   replies?: number;
 }
 
@@ -98,7 +99,6 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to connect to discussions API", err);
     }
-    // Artificial delay to show off the skeleton loader
     setTimeout(() => setIsLoading(false), 800);
   };
 
@@ -107,6 +107,17 @@ export default function Home() {
     if (!user) return;
     setIsSubmitting(true);
     
+    // Generate a quick 16-char hash locally in case backend hasn't upgraded yet
+    const generateHash = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < 16; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    const localHash = generateHash();
+
     try {
       const res = await fetch(`${API_URL}?action=create`, {
         method: 'POST',
@@ -118,7 +129,8 @@ export default function Home() {
           user_type: user.tier,
           title: newTitle,
           tags: newTag,
-          content: newContent
+          content: newContent,
+          post_hash: localHash
         })
       });
       const data = await res.json();
@@ -151,15 +163,34 @@ export default function Home() {
     localStorage.setItem('theme', newTheme);
   };
 
+  // Shallow Routing for Deep View Modal
+  const openPostModal = (thread: Discussion) => {
+    setActivePost(thread);
+    const hash = thread.post_hash || `post_${thread.id}aBcDeFgHiJkLmNo`;
+    const cleanFirstName = thread.first_name.replace(/\s+/g, '-').toLowerCase();
+    const cleanUserId = thread.user_id.replace(/\s+/g, '-').toLowerCase() || 'u';
+    // Format: /username/userid/post_url
+    const newUrl = `/${cleanFirstName}/${cleanUserId}/${hash}`;
+    window.history.pushState(null, '', newUrl);
+    // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closePostModal = () => {
+    setActivePost(null);
+    window.history.pushState(null, '', '/');
+    document.body.style.overflow = 'auto';
+  };
+
   const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(currentUrl)}`;
   const registerUrl = `${ACCOUNTS_URL}/?registration=individual&redirect=${encodeURIComponent(currentUrl)}`;
   const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
 
   const getTagColor = (tagName: string) => {
-    if (tagName === 'Newsroom') return '#00b84c'; // Deep Green
-    if (tagName === 'VIP Tiers') return '#f5a623'; // Orange
-    if (tagName === 'My Squad') return '#0070f3'; // Blue
-    return '#8b5cf6'; // Purple
+    if (tagName === 'Newsroom') return '#00b84c';
+    if (tagName === 'VIP Tiers') return '#f5a623';
+    if (tagName === 'My Squad') return '#0070f3';
+    return '#8b5cf6';
   };
 
   const filteredThreads = threads.filter(thread => 
@@ -176,7 +207,7 @@ export default function Home() {
           <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
           </button>
-          <div className={styles.logo} onClick={() => { setActivePost(null); setSearchQuery(''); }} style={{cursor: 'pointer'}}>
+          <div className={styles.logo} onClick={() => { closePostModal(); setSearchQuery(''); }} style={{cursor: 'pointer'}}>
             Novaira <span className={styles.logoDot}>Community</span>
           </div>
         </div>
@@ -215,10 +246,14 @@ export default function Home() {
                 )}
               </div>
 
-              {/* User Dropdown */}
+              {/* User Dropdown Pill (Avatar + Name + Arrow) */}
               <div className={styles.userDropdownWrapper} ref={dropdownRef}>
-                <div className={styles.headerAvatar} title={user.name} onClick={() => setDropdownOpen(!dropdownOpen)}>
-                  {user.name.charAt(0).toUpperCase()}
+                <div className={`${styles.userPill} ${dropdownOpen ? styles.open : ''}`} onClick={() => setDropdownOpen(!dropdownOpen)}>
+                  <div className={styles.headerAvatar} title={user.name}>
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className={styles.userPillName}>{user.name}</div>
+                  <i className={`fas fa-chevron-down ${styles.userPillArrow}`}></i>
                 </div>
                 
                 {dropdownOpen && (
@@ -230,8 +265,8 @@ export default function Home() {
                       </div>
                       <span>{user.tier} Account</span>
                     </div>
-                    <a href="#" className={styles.dropdownItem}><i className="far fa-user"></i> My Profile</a>
-                    <a href="#" className={styles.dropdownItem}><i className="fas fa-cog"></i> Settings</a>
+                    <a href="/profile" className={styles.dropdownItem}><i className="far fa-user"></i> My Profile</a>
+                    <a href="/settings" className={styles.dropdownItem}><i className="fas fa-cog"></i> Settings</a>
                     <div className={styles.dropdownDivider}></div>
                     <a href={logoutUrl} className={styles.dropdownItem} style={{color: 'var(--brand-green)'}}>
                       <i className="fas fa-sign-out-alt"></i> Log Out
@@ -264,7 +299,7 @@ export default function Home() {
 
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
-              <a onClick={() => { setActivePost(null); setSearchQuery(''); setMobileMenuOpen(false); }} className={`${styles.navItem} ${!searchQuery && !activePost ? styles.active : ''}`}>
+              <a onClick={() => { closePostModal(); setSearchQuery(''); setMobileMenuOpen(false); }} className={`${styles.navItem} ${!searchQuery && !activePost ? styles.active : ''}`}>
                 <i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions
               </a>
             </div>
@@ -273,144 +308,144 @@ export default function Home() {
           <div className={styles.navGroup}>
             <div className={styles.navGroupTitle}>Tags</div>
             <div className={styles.navMenu}>
-              <a onClick={() => { setActivePost(null); setSearchQuery('Newsroom'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { closePostModal(); setSearchQuery('Newsroom'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#00b84c'}}></span> Newsroom
               </a>
-              <a onClick={() => { setActivePost(null); setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { closePostModal(); setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#f5a623'}}></span> VIP Tiers
               </a>
-              <a onClick={() => { setActivePost(null); setSearchQuery('My Squad'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { closePostModal(); setSearchQuery('My Squad'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#0070f3'}}></span> My Squad
               </a>
-              <a onClick={() => { setActivePost(null); setSearchQuery('General'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { closePostModal(); setSearchQuery('General'); setMobileMenuOpen(false); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#8b5cf6'}}></span> General
               </a>
             </div>
           </div>
         </aside>
 
-        {/* CONTENT AREA */}
+        {/* CONTENT AREA (LIVE FEED) */}
         <main className={styles.content}>
-          {activePost ? (
+          <div className={styles.contentHeader}>
+            <h1>{searchQuery ? `Results for "${searchQuery}"` : 'Live Feed'}</h1>
+            <div style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}><i className="fas fa-broadcast-tower" style={{color: 'var(--brand-green)'}}></i> Online</div>
+          </div>
+
+          <div className={styles.discussionList}>
+            {isLoading ? (
+              // SKELETON LOADERS
+              <>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className={styles.skeletonCard}>
+                    <div className={styles.skeletonAvatar}></div>
+                    <div className={styles.skeletonBody}>
+                      <div className={styles.skeletonLine}></div>
+                      <div className={`${styles.skeletonLine} ${styles.medium}`}></div>
+                      <div className={`${styles.skeletonLine} ${styles.short}`}></div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : filteredThreads.length > 0 ? (
+              filteredThreads.map(thread => (
+                <div key={thread.id} className={styles.discussion} onClick={() => openPostModal(thread)}>
+                  <div className={styles.discussionAvatar}>
+                    {thread.first_name ? thread.first_name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className={styles.discussionBody}>
+                    <h3 className={styles.discussionTitle}>{thread.title}</h3>
+                    <div className={styles.discussionMeta}>
+                      <span className={styles.tagPill}>
+                        <span className={styles.tagDotSmall} style={{color: getTagColor(thread.tags)}}></span> {thread.tags}
+                      </span>
+                      <span>By <strong>{thread.first_name}</strong></span>
+                      <span>{new Date(thread.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className={styles.discussionContentPreview}>{thread.content}</div>
+                    <div className={styles.discussionStats}>
+                      <span><i className="far fa-comment"></i> {thread.replies || 0}</span>
+                      <span><i className="far fa-eye"></i> {thread.views || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <i className="fas fa-satellite-dish"></i>
+                <h2>No discussions found.</h2>
+                <p>Be the first to start a discussion in this tag!</p>
+                <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => {
+                   if (!user) { window.location.href = loginUrl; return; }
+                   setNewTag(searchQuery || 'General'); 
+                   setIsModalOpen(true); 
+                }}>
+                  Start Discussion
+                </button>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {/* FULL SCREEN DEEP VIEW MODAL */}
+      {activePost && (
+        <div className={styles.fullScreenModalOverlay} onClick={closePostModal}>
+          <div className={styles.fullScreenModalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.btnBackTopRight} onClick={closePostModal} title="Close Post">
+              <i className="fas fa-times"></i>
+            </button>
             
-            /* ================= DEEP VIEW (POST DETAILS) ================= */
-            <div className={styles.deepViewContainer}>
-              <button className={styles.btnBack} onClick={() => setActivePost(null)}>
-                <i className="fas fa-arrow-left"></i> Back to Feed
-              </button>
-              
-              <div className={styles.deepHeader}>
-                <div className={styles.deepAvatar}>
-                  {activePost.first_name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h1 className={styles.deepTitle}>{activePost.title}</h1>
-                  <div className={styles.discussionMeta} style={{marginBottom: '1rem'}}>
-                    <span className={styles.tagPill}><span className={styles.tagDotSmall} style={{color: getTagColor(activePost.tags)}}></span> {activePost.tags}</span>
-                    <span>By <strong>{activePost.first_name}</strong> ({activePost.user_type})</span>
-                    <span>{new Date(activePost.created_at).toLocaleString()}</span>
-                  </div>
+            <button className={styles.btnBack} onClick={closePostModal}>
+              <i className="fas fa-arrow-left"></i> Back to Feed
+            </button>
+            
+            <div className={styles.deepHeader}>
+              <div className={styles.deepAvatar}>
+                {activePost.first_name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className={styles.deepTitle}>{activePost.title}</h1>
+                <div className={styles.discussionMeta} style={{marginBottom: '1rem'}}>
+                  <span className={styles.tagPill}><span className={styles.tagDotSmall} style={{color: getTagColor(activePost.tags)}}></span> {activePost.tags}</span>
+                  <span>By <strong>{activePost.first_name}</strong> ({activePost.user_type})</span>
+                  <span>{new Date(activePost.created_at).toLocaleString()}</span>
                 </div>
               </div>
+            </div>
+            
+            <div className={styles.deepContent}>
+              {activePost.content}
+            </div>
+            
+            {/* COMMENTS SECTION */}
+            <div className={styles.commentsSection}>
+              <h3>Discussion (2)</h3>
               
-              <div className={styles.deepContent}>
-                {activePost.content}
-              </div>
+              <form className={styles.commentForm} onSubmit={(e) => { e.preventDefault(); alert("Comment posted successfully!"); }}>
+                <textarea className={styles.commentInput} placeholder="Write a reply..."></textarea>
+                <button type="submit" className={styles.btnComment}>Reply</button>
+              </form>
               
-              {/* COMMENTS SECTION */}
-              <div className={styles.commentsSection}>
-                <h3>Discussion (2)</h3>
-                
-                <form className={styles.commentForm} onSubmit={(e) => { e.preventDefault(); alert("Comment posted successfully!"); }}>
-                  <textarea className={styles.commentInput} placeholder="Write a reply..."></textarea>
-                  <button type="submit" className={styles.btnComment}>Reply</button>
-                </form>
-                
-                <div className={styles.commentList}>
-                  <div className={styles.comment}>
-                    <div className={styles.commentAvatar}>A</div>
-                    <div className={styles.commentBody}>
-                      <h4>Admin <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>1 hr ago</span></h4>
-                      <p>Welcome to the Novaira Next-Gen platform. This looks incredible!</p>
-                    </div>
+              <div className={styles.commentList}>
+                <div className={styles.comment}>
+                  <div className={styles.commentAvatar}>A</div>
+                  <div className={styles.commentBody}>
+                    <h4>Admin <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>1 hr ago</span></h4>
+                    <p>Welcome to the Novaira Next-Gen platform. This looks incredible!</p>
                   </div>
-                  <div className={styles.comment}>
-                    <div className={styles.commentAvatar} style={{background: '#00b84c'}}>S</div>
-                    <div className={styles.commentBody}>
-                      <h4>System <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>30 mins ago</span></h4>
-                      <p>All database connections are secure and live fetching is fully operational.</p>
-                    </div>
+                </div>
+                <div className={styles.comment}>
+                  <div className={styles.commentAvatar} style={{background: '#00b84c'}}>S</div>
+                  <div className={styles.commentBody}>
+                    <h4>System <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>30 mins ago</span></h4>
+                    <p>All database connections are secure and live fetching is fully operational.</p>
                   </div>
                 </div>
               </div>
             </div>
-
-          ) : (
-            
-            /* ================= LIVE FEED ================= */
-            <>
-              <div className={styles.contentHeader}>
-                <h1>{searchQuery ? `Results for "${searchQuery}"` : 'Live Feed'}</h1>
-                <div style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}><i className="fas fa-broadcast-tower" style={{color: 'var(--brand-green)'}}></i> Online</div>
-              </div>
-
-              <div className={styles.discussionList}>
-                {isLoading ? (
-                  // SKELETON LOADERS
-                  <>
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className={styles.skeletonCard}>
-                        <div className={styles.skeletonAvatar}></div>
-                        <div className={styles.skeletonBody}>
-                          <div className={styles.skeletonLine}></div>
-                          <div className={`${styles.skeletonLine} ${styles.medium}`}></div>
-                          <div className={`${styles.skeletonLine} ${styles.short}`}></div>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                ) : filteredThreads.length > 0 ? (
-                  filteredThreads.map(thread => (
-                    <div key={thread.id} className={styles.discussion} onClick={() => setActivePost(thread)}>
-                      <div className={styles.discussionAvatar}>
-                        {thread.first_name ? thread.first_name.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                      <div className={styles.discussionBody}>
-                        <h3 className={styles.discussionTitle}>{thread.title}</h3>
-                        <div className={styles.discussionMeta}>
-                          <span className={styles.tagPill}>
-                            <span className={styles.tagDotSmall} style={{color: getTagColor(thread.tags)}}></span> {thread.tags}
-                          </span>
-                          <span>By <strong>{thread.first_name}</strong></span>
-                          <span>{new Date(thread.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <div className={styles.discussionContentPreview}>{thread.content}</div>
-                        <div className={styles.discussionStats}>
-                          <span><i className="far fa-comment"></i> {thread.replies || 0}</span>
-                          <span><i className="far fa-eye"></i> {thread.views || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className={styles.emptyState}>
-                    <i className="fas fa-satellite-dish"></i>
-                    <h2>No discussions found.</h2>
-                    <p>Be the first to start a discussion in this tag!</p>
-                    <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => {
-                       if (!user) { window.location.href = loginUrl; return; }
-                       setNewTag(searchQuery || 'General'); 
-                       setIsModalOpen(true); 
-                    }}>
-                      Start Discussion
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </main>
-      </div>
+          </div>
+        </div>
+      )}
 
       {/* START DISCUSSION MODAL */}
       {isModalOpen && (
