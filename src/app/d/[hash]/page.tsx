@@ -84,8 +84,8 @@ export default function PostNativePage() {
           
           if (found) {
             setPost(found);
-            // Increment view
-            fetch(`${API_URL}?action=increment_view&hash=${found.post_hash || hash}`, { method: 'GET' }).catch(() => {});
+            // Increment view (Added credentials: 'include' to bypass InfinityFree Bot Protection)
+            fetch(`${API_URL}?action=increment_view&hash=${found.post_hash || hash}`, { method: 'GET', credentials: 'include' }).catch(() => {});
             // Fetch comments
             fetchComments(found.post_hash || hash);
           }
@@ -106,7 +106,7 @@ export default function PostNativePage() {
 
   const fetchComments = async (postHash: string) => {
     try {
-      const res = await fetch(`${API_URL}?action=fetch_comments&post_hash=${postHash}`, { method: 'GET' });
+      const res = await fetch(`${API_URL}?action=fetch_comments&post_hash=${postHash}`, { method: 'GET', credentials: 'include' });
       const data = await res.json();
       if (data && data.status === 'success') {
         setComments(data.data);
