@@ -1,13 +1,10 @@
 /* ========================================================
    NOVAIRA COMMUNITY — MATERIAL 3 DESIGN SYSTEM
-   Deep Green Brand | MD3 Tokens | Native App Feel
    ======================================================== */
 
 .app {
   display: flex; flex-direction: column; min-height: 100vh;
-  overscroll-behavior: none;
-  overflow-x: hidden;
-  background: var(--bg-primary);
+  overscroll-behavior: none; overflow-x: hidden; background: var(--bg-primary);
 }
 
 /* ========================================================
@@ -17,7 +14,7 @@
   position: sticky; top: 0; z-index: 1000; height: 64px;
   background: var(--bg-primary); border-bottom: 1px solid var(--border-color);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; transition: box-shadow 0.2s;
+  padding: 0 1.5rem;
 }
 .headerLeft { display: flex; align-items: center; gap: 1rem; flex: 0 0 auto; }
 
@@ -27,11 +24,11 @@
   background: transparent; border: none; cursor: pointer;
   align-items: center; justify-content: center; transition: background 0.2s;
 }
-.hamburger:hover { background: rgba(var(--text-primary-rgb), 0.08); color: var(--text-primary); }
+.hamburger:hover { background: rgba(var(--text-primary-rgb), 0.08); }
 
 .logo {
   display: flex; align-items: center; gap: 0.5rem;
-  font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px;
+  font-weight: 800; font-size: 1.15rem;
   color: var(--text-primary); cursor: pointer;
 }
 .logoDot { color: var(--brand-green); }
@@ -61,7 +58,7 @@
   align-items: center; justify-content: center;
   transition: background 0.2s; border: none; background: transparent;
 }
-.bellIcon:hover { background: rgba(var(--text-primary-rgb), 0.08); color: var(--text-primary); }
+.bellIcon:hover { background: rgba(var(--text-primary-rgb), 0.08); }
 .bellBadge {
   position: absolute; top: 3px; right: 3px;
   background: #f44336; color: #fff; font-size: 0.6rem; font-weight: 800;
@@ -80,7 +77,7 @@
 }
 @keyframes m3MenuIn {
   from { opacity: 0; transform: scale(0.95) translateY(-6px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 .notifHeader {
   padding: 1rem 1.25rem 0.75rem;
@@ -88,7 +85,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 .notifHeaderTitle { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
-.notifHeaderLink { font-size: 0.8rem; color: var(--brand-green); font-weight: 600; text-decoration: none; }
+.notifHeaderLink { font-size: 0.8rem; color: var(--brand-green); font-weight: 600; text-decoration: none; cursor: pointer; }
 .notifHeaderLink:hover { text-decoration: underline; }
 .notifItem {
   padding: 0.85rem 1.25rem; display: flex; align-items: flex-start; gap: 0.75rem;
@@ -117,18 +114,19 @@
   color: var(--text-secondary); font-size: 1.1rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center; transition: background 0.2s;
 }
-.themeToggle:hover { background: rgba(var(--text-primary-rgb), 0.08); color: var(--text-primary); }
+.themeToggle:hover { background: rgba(var(--text-primary-rgb), 0.08); }
 
 .btnLogin {
   color: var(--text-secondary); font-weight: 600; font-size: 0.9rem;
   padding: 0.5rem 1rem; border-radius: 100px; border: none; background: transparent;
-  cursor: pointer; transition: background 0.2s; white-space: nowrap;
+  cursor: pointer; transition: background 0.2s; white-space: nowrap; text-decoration: none;
 }
-.btnLogin:hover { background: rgba(var(--text-primary-rgb), 0.08); color: var(--text-primary); }
+.btnLogin:hover { background: rgba(var(--text-primary-rgb), 0.08); }
 .btnSignup {
   background: var(--brand-green); color: #fff;
   padding: 0.5rem 1.25rem; border-radius: 100px; font-weight: 700; font-size: 0.9rem;
-  border: none; cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+  border: none; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; text-decoration: none;
+  display: inline-flex; align-items: center;
 }
 .btnSignup:hover { opacity: 0.9; }
 
@@ -170,12 +168,12 @@
 .dropdownDivider { height: 1px; background: var(--border-color); }
 
 /* ========================================================
-   LAYOUT
+   HOME PAGE LAYOUT
    ======================================================== */
 .container { display: flex; max-width: 1200px; margin: 0 auto; padding: 1.5rem; gap: 2.5rem; width: 100%; }
 
 /* ========================================================
-   SIDEBAR
+   SIDEBAR — Desktop sticky column
    ======================================================== */
 .sidebar { width: 240px; flex-shrink: 0; }
 .sidebarOverlay { display: none; }
@@ -184,7 +182,7 @@
   width: 100%; background: var(--brand-green); color: #fff;
   padding: 0.85rem 1rem; border-radius: 100px; font-weight: 700; font-size: 0.9rem; margin-bottom: 1.25rem;
   display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-  border: none; cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s;
+  border: none; cursor: pointer; transition: opacity 0.2s;
   box-shadow: 0 2px 8px rgba(0,184,76,0.3);
 }
 .btnStartDiscussion:hover:not(:disabled) { opacity: 0.92; }
@@ -201,7 +199,7 @@
   padding: 0.6rem 0.75rem; border-radius: 100px;
   color: var(--text-secondary); font-weight: 600; font-size: 0.9rem;
   cursor: pointer; text-decoration: none; transition: background 0.15s;
-  border: none; background: none; width: 100%;
+  border: none; background: none; width: 100%; text-align: left;
 }
 .navItem:hover { background: rgba(var(--text-primary-rgb), 0.07); color: var(--text-primary); }
 .navItem.active { background: rgba(0,184,76,0.12); color: var(--brand-green); font-weight: 700; }
@@ -242,10 +240,7 @@
   cursor: pointer; border: 1px solid transparent;
   transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
-.discussion:hover {
-  background: var(--bg-primary); border-color: var(--border-color);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
+.discussion:hover { background: var(--bg-primary); border-color: var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 .discussionAvatar {
   width: 44px; height: 44px; border-radius: 50%; background: var(--brand-green); color: #fff;
   display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
@@ -267,7 +262,7 @@
 .discussionStats span { display: flex; align-items: center; gap: 0.3rem; }
 
 /* ========================================================
-   MODAL (Create Discussion / Legacy)
+   MODAL
    ======================================================== */
 .modalOverlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -279,10 +274,7 @@
   padding: 2rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4);
   animation: m3ModalIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-@keyframes m3ModalIn {
-  from { opacity: 0; transform: scale(0.93) translateY(16px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
+@keyframes m3ModalIn { from { opacity: 0; transform: scale(0.93) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .modalHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
 .modalHeader h2 { font-size: 1.35rem; font-weight: 700; color: var(--text-primary); }
 .modalClose { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
@@ -297,9 +289,9 @@
 .modalTextarea { min-height: 120px; resize: vertical; }
 .modalInput:focus, .modalTextarea:focus, .modalSelect:focus { outline: none; border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(0,184,76,0.12); }
 .modalActions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
-.btnCancel { padding: 0.6rem 1.25rem; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; font-weight: 600; border-radius: 100px; transition: background 0.15s; }
+.btnCancel { padding: 0.6rem 1.25rem; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; font-weight: 600; border-radius: 100px; }
 .btnCancel:hover { background: rgba(var(--text-primary-rgb),0.07); }
-.btnSubmit { padding: 0.6rem 1.75rem; background: var(--brand-green); color: #fff; border-radius: 100px; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.2s; }
+.btnSubmit { padding: 0.6rem 1.75rem; background: var(--brand-green); color: #fff; border-radius: 100px; font-weight: 700; cursor: pointer; border: none; }
 .btnSubmit:hover:not(:disabled) { opacity: 0.9; }
 
 /* ========================================================
@@ -309,55 +301,118 @@
 .footer a { color: var(--text-secondary); margin: 0 0.6rem; font-weight: 600; transition: color 0.2s; }
 .footer a:hover { color: var(--brand-green); }
 
+.btnBack {
+  background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
+  border: none; padding: 0.4rem 0.75rem; border-radius: 100px; transition: background 0.15s;
+}
+.btnBack:hover { background: rgba(var(--text-primary-rgb),0.08); color: var(--text-primary); }
+
 /* ========================================================
-   POST PAGE — NATIVE APP LAYOUT
-   postPageApp: height:100vh + overflow:hidden = outer shell
-   header: flex-shrink:0 = always at top
-   postScrollBody: flex:1 + overflow-y:auto = scrolls
-   stickyCommentBar: flex-shrink:0 = always at bottom
+   ═══ POST PAGE — NATIVE APP SHELL LAYOUT ═══
+   Structure:
+     .postPageApp        → flex col, height:100vh, overflow:hidden
+       header            → flex-shrink:0  (always visible, top)
+       .postScrollBody   → flex:1, overflow-y:auto (scrollable middle)
+         aside.sidebar   → 240px column on desktop / fixed overlay on mobile
+         .postBodyInner  → flex:1, content area
+       .stickyCommentBar → flex-shrink:0  (always visible, bottom)
    ======================================================== */
+
 .postPageApp {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
-/* postPageApp's header must NOT be position:sticky when inside postPageApp */
-.postPageApp .header {
+/* Override header sticky inside native shell */
+.postPageApp > .header {
   position: relative;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 200;
 }
+
+/* Scrollable middle — contains sidebar (desktop) + content */
 .postScrollBody {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-.postBodyInner {
+  overscroll-behavior-y: contain;
   display: flex;
+  flex-direction: row; /* sidebar left + content right on desktop */
+  align-items: flex-start;
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   padding: 1.5rem;
   gap: 2.5rem;
-  min-height: 100%;
+  box-sizing: border-box;
 }
-@media (max-width: 900px) {
-  .postBodyInner { padding: 0.75rem 0 0; gap: 0; }
-  .postBodyInner > aside { display: none; }
-  .postBodyInner > main { width: 100%; max-width: 100%; }
+
+/* Desktop sidebar — sticky inside scrollable body */
+.postScrollBody > .sidebar {
+  position: sticky;
+  top: 0;
+  width: 240px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  /* reset any mobile overrides */
+  transform: none !important;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  height: auto;
+  overflow: visible;
 }
-.btnBack {
-  background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
-  display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
-  border: none; padding: 0.4rem 0.75rem; border-radius: 100px;
-  transition: background 0.15s;
+
+/* Content area */
+.postBodyInner {
+  flex: 1;
+  min-width: 0;
 }
-.btnBack:hover { background: rgba(var(--text-primary-rgb),0.08); color: var(--text-primary); }
+
+/* Comment bar — always at bottom of postPageApp */
+.stickyCommentBar {
+  flex-shrink: 0;
+  display: flex; gap: 0.6rem; align-items: center;
+  background: var(--bg-primary); border-top: 1px solid var(--border-color);
+  padding: 0.65rem 1.5rem;
+  padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+  z-index: 200;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.08);
+}
+
+/* Reply hint banner above comment bar */
+.replyHint {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.4rem 1.5rem;
+  background: rgba(0,184,76,0.08); border-top: 1px solid rgba(0,184,76,0.2);
+  font-size: 0.82rem; color: var(--brand-green); font-weight: 600;
+}
+.replyHint button {
+  background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; line-height: 1;
+}
+
+.stickyCommentInput {
+  flex-grow: 1; background: var(--bg-secondary); border: none;
+  border-radius: 100px; padding: 0.55rem 1.1rem; font-family: var(--font-sans);
+  color: var(--text-primary); font-size: 0.92rem; outline: none;
+}
+.stickyCommentInput:focus { box-shadow: 0 0 0 2px var(--brand-green); }
+.btnSendComment {
+  width: 42px; height: 42px; border-radius: 50%; background: var(--brand-green); color: #fff;
+  border: none; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.2s; box-shadow: 0 2px 6px rgba(0,184,76,0.35);
+}
+.btnSendComment:hover:not(:disabled) { opacity: 0.88; }
+.btnSendComment:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ========================================================
-   POST PAGE — Material 3
+   POST CONTENT
    ======================================================== */
 .postNativeContainer {
   background: var(--bg-secondary); border-radius: 20px;
@@ -370,21 +425,14 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; font-weight: 700;
 }
-.deepTitle {
-  font-size: 1.25rem; font-weight: 700; color: var(--text-primary);
-  line-height: 1.4; margin-bottom: 1rem;
-}
-.postContentArea {
-  font-size: 0.98rem; color: var(--text-secondary); line-height: 1.75;
-  margin-bottom: 1.5rem; white-space: pre-wrap;
-}
+.deepTitle { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 1rem; }
+.postContentArea { font-size: 0.98rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 1.5rem; white-space: pre-wrap; }
 
-/* ---- Emoji Reactions Bar ---- */
+/* Emoji Reactions */
 .reactionsBar {
   display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;
   padding: 0.65rem 0; border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem;
-  position: relative;
+  border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; position: relative;
 }
 .reactionBtn {
   display: flex; align-items: center; gap: 0.3rem;
@@ -407,13 +455,10 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.18); display: flex; gap: 0.3rem; flex-wrap: wrap;
   z-index: 100; animation: m3MenuIn 0.15s ease-out forwards; margin-top: 0.35rem;
 }
-.emojiPanelBtn {
-  font-size: 1.35rem; background: none; border: none; cursor: pointer;
-  padding: 0.3rem; border-radius: 8px; transition: background 0.15s;
-}
+.emojiPanelBtn { font-size: 1.35rem; background: none; border: none; cursor: pointer; padding: 0.3rem; border-radius: 8px; transition: background 0.15s; }
 .emojiPanelBtn:hover { background: rgba(var(--text-primary-rgb),0.08); }
 
-/* ---- M3 Compact Comments ---- */
+/* Comments */
 .commentList { display: flex; flex-direction: column; gap: 0.5rem; }
 .comment { display: flex; gap: 0.6rem; align-items: flex-start; }
 .commentAvatar {
@@ -429,63 +474,35 @@
 .commentTime { font-size: 0.7rem; color: var(--text-muted); margin-left: 0.4rem; font-weight: 400; }
 .commentText { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.15rem; word-break: break-word; }
 .commentActions { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.3rem; }
-.btnReply {
-  background: none; border: none; font-size: 0.73rem; color: var(--text-muted);
-  cursor: pointer; font-weight: 700; padding: 0; transition: color 0.15s;
-}
+.btnReply { background: none; border: none; font-size: 0.73rem; color: var(--text-muted); cursor: pointer; font-weight: 700; padding: 0; transition: color 0.15s; }
 .btnReply:hover { color: var(--brand-green); }
 .replyThread { margin-left: 2.2rem; display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.45rem; }
 .replyThread .commentAvatar { width: 26px; height: 26px; font-size: 0.7rem; }
 .replyThread .commentBubble { border-radius: 12px; border-top-left-radius: 4px; padding: 0.45rem 0.75rem; }
 
-/* ── Sticky Comment Bar ── flex-shrink:0 at bottom of postPageApp flex column */
-.stickyCommentBar {
-  flex-shrink: 0;
-  display: flex; gap: 0.6rem; align-items: center;
-  background: var(--bg-primary); border-top: 1px solid var(--border-color);
-  padding: 0.6rem 1.5rem;
-  padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
-  z-index: 10;
-  box-shadow: 0 -1px 6px rgba(0,0,0,0.08);
-}
-.stickyCommentInput {
-  flex-grow: 1; background: var(--bg-secondary); border: none;
-  border-radius: 100px; padding: 0.55rem 1.1rem; font-family: var(--font-sans);
-  color: var(--text-primary); font-size: 0.92rem; outline: none;
-}
-.stickyCommentInput:focus { box-shadow: 0 0 0 2px var(--brand-green); }
-.btnSendComment {
-  width: 42px; height: 42px; border-radius: 50%; background: var(--brand-green); color: #fff;
-  border: none; display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; cursor: pointer; flex-shrink: 0;
-  transition: opacity 0.2s; box-shadow: 0 2px 6px rgba(0,184,76,0.35);
-}
-.btnSendComment:hover:not(:disabled) { opacity: 0.88; }
-.btnSendComment:disabled { opacity: 0.4; cursor: not-allowed; }
-
 /* ========================================================
-   MOBILE — Full Responsive
+   MOBILE
    ======================================================== */
 @media (max-width: 900px) {
+  /* Home page */
   .container { flex-direction: column; gap: 0; margin: 0; padding: 1rem; }
 
+  /* Sidebar — fixed overlay drawer on mobile */
   .sidebar {
-    display: block; position: fixed; top: 64px; left: 0;
+    position: fixed !important; top: 64px; left: 0;
     width: 280px; height: calc(100vh - 64px);
-    background: var(--bg-primary); border-right: 1px solid var(--border-color);
+    background: var(--bg-primary) !important; border-right: 1px solid var(--border-color);
     padding: 1.25rem; z-index: 1500; overflow-y: auto;
-    transform: translateX(-100%);
+    transform: translateX(-100%) !important;
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
+    box-shadow: none;
   }
   .sidebar.open {
-    transform: translateX(0);
-    box-shadow: 4px 0 24px rgba(0,0,0,0.22);
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.22) !important;
   }
-  .sidebarOverlay {
-    display: none; position: fixed; inset: 0; top: 64px;
-    background: rgba(0,0,0,0.45); z-index: 1400;
-  }
+  .sidebarOverlay { display: none; position: fixed; inset: 0; top: 64px; background: rgba(0,0,0,0.45); z-index: 1400; }
   .sidebarOverlay.open { display: block; }
 
   .hamburger { display: flex; }
@@ -502,55 +519,34 @@
   .discussion { padding: 0.85rem 1rem; border-radius: 14px; }
   .discussionAvatar { width: 38px; height: 38px; font-size: 0.95rem; }
 
-  .postNativeContainer { border-radius: 0; padding: 1rem; margin-bottom: 80px; }
-  .deepAvatar { width: 38px; height: 38px; font-size: 0.95rem; }
-  .deepTitle { font-size: 1.1rem; }
-  .stickyCommentBar { left: 0; }
-}
-
-/* ========================================================
-   POST PAGE — NATIVE APP LAYOUT (mobile fixed header+footer, scroll middle)
-   ======================================================== */
-.postPageApp {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden; /* Prevent outer scroll */
-}
-
-/* The scrollable body between header and comment bar */
-.postScrollBody {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
-  overscroll-behavior: contain;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-/* Wrapper that holds sidebar + main on desktop, full-width on mobile */
-.postBodyInner {
-  display: flex;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 1.5rem;
-  gap: 2.5rem;
-  flex: 1;
-}
-
-@media (max-width: 900px) {
-  .postBodyInner {
+  /* Post page scrollable body — full width on mobile */
+  .postScrollBody {
+    flex-direction: column;
     padding: 0;
     gap: 0;
-  }
-  /* On mobile, sidebar is fixed/overlay so inner body is just the content */
-  .postBodyInner > aside { display: none; } /* Hide inline aside on mobile — it's fixed overlay */
-  .postBodyInner > main {
-    width: 100%;
     max-width: 100%;
-    padding: 0.75rem 0 0 0;
-    padding-bottom: 1rem;
   }
+  /* Hide inline sidebar on mobile (use fixed overlay) */
+  .postScrollBody > .sidebar {
+    position: fixed !important;
+    width: 280px;
+    height: calc(100vh - 64px);
+    background: var(--bg-primary) !important;
+    padding: 1.25rem !important;
+    overflow-y: auto;
+    transform: translateX(-100%) !important;
+    top: 64px;
+  }
+  .postScrollBody > .sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.22) !important;
+  }
+  .postBodyInner { padding: 0.75rem 0 0; }
+
+  .postNativeContainer { border-radius: 0; padding: 1rem; margin-bottom: 0; }
+  .deepAvatar { width: 38px; height: 38px; font-size: 0.95rem; }
+  .deepTitle { font-size: 1.1rem; }
+
+  .stickyCommentBar { padding: 0.6rem 0.85rem; padding-bottom: max(0.6rem, env(safe-area-inset-bottom)); }
+  .replyHint { padding: 0.35rem 0.85rem; }
 }
