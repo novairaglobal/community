@@ -85,7 +85,10 @@ export default function Home() {
   const fetchDiscussions = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}?action=fetch`);
+      const res = await fetch(`${API_URL}?action=fetch`, {
+        method: 'GET',
+        credentials: 'include'
+      });
       const data = await res.json();
       if (data && data.status === 'success') {
         setThreads(data.data);
@@ -110,6 +113,7 @@ export default function Home() {
     try {
       const res = await fetch(`${API_URL}?action=create`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           user_id: user.id.toString(),
