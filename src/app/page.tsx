@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
 interface Discussion {
@@ -13,11 +14,12 @@ interface Discussion {
   tags: string;
   views: number;
   created_at: string;
-  post_hash?: string; // New 16 char unique hash
+  post_hash?: string;
   replies?: number;
 }
 
 export default function Home() {
+  const router = useRouter();
   const [theme, setTheme] = useState('dark');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -32,16 +34,6 @@ export default function Home() {
   // Live Database States
   const [threads, setThreads] = useState<Discussion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Deep View State
-  const [activePost, setActivePost] = useState<Discussion | null>(null);
-  
-  // Modal States
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newTag, setNewTag] = useState('Newsroom');
-  const [newContent, setNewContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const API_URL = 'https://accounts.novairasolution.com/api/discussions.php';
   const ACCOUNTS_URL = 'https://accounts.novairasolution.com';
@@ -102,50 +94,6 @@ export default function Home() {
     setTimeout(() => setIsLoading(false), 800);
   };
 
-  const submitDiscussion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setIsSubmitting(true);
-    
-    // Generate a quick 16-char hash locally in case backend hasn't upgraded yet
-    const generateHash = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < 16; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    const localHash = generateHash();
-
-    try {
-      const res = await fetch(`${API_URL}?action=create`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          user_id: user.id.toString(),
-          first_name: user.name,
-          user_type: user.tier,
-          title: newTitle,
-          tags: newTag,
-          content: newContent,
-          post_hash: localHash
-        })
-      });
-      const data = await res.json();
-      if (data && data.status === 'success') {
-        setNewTitle(''); setNewContent(''); setIsModalOpen(false);
-        fetchDiscussions();
-      } else {
-        alert("Failed to post: " + data.message);
-      }
-    } catch (err) {
-      alert("Network error while posting.");
-    }
-    setIsSubmitting(false);
-  };
-
   useEffect(() => {
     let metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (!metaThemeColor) {
@@ -163,23 +111,9 @@ export default function Home() {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Shallow Routing for Deep View Modal
-  const openPostModal = (thread: Discussion) => {
-    setActivePost(thread);
+  const openPost = (thread: Discussion) => {
     const hash = thread.post_hash || `post_${thread.id}aBcDeFgHiJkLmNo`;
-    const cleanFirstName = thread.first_name.replace(/\s+/g, '-').toLowerCase();
-    const cleanUserId = thread.user_id.replace(/\s+/g, '-').toLowerCase() || 'u';
-    // Format: /username/userid/post_url
-    const newUrl = `/${cleanFirstName}/${cleanUserId}/${hash}`;
-    window.history.pushState(null, '', newUrl);
-    // Prevent background scrolling
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closePostModal = () => {
-    setActivePost(null);
-    window.history.pushState(null, '', '/');
-    document.body.style.overflow = 'auto';
+    router.push(`/d/${hash}`);
   };
 
   const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(currentUrl)}`;
@@ -207,7 +141,7 @@ export default function Home() {
           <button className={styles.hamburger} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
           </button>
-          <div className={styles.logo} onClick={() => { closePostModal(); setSearchQuery(''); }} style={{cursor: 'pointer'}}>
+          <div className={styles.logo} onClick={() => { setSearchQuery(''); router.push('/'); }} style={{cursor: 'pointer'}}>
             Novaira <span className={styles.logoDot}>Community</span>
           </div>
         </div>
@@ -292,14 +226,14 @@ export default function Home() {
         <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
           <button className={styles.btnStartDiscussion} onClick={() => {
             if (!user) { window.location.href = loginUrl; return; }
-            setIsModalOpen(true); setMobileMenuOpen(false);
+            router.push('/create');
           }}>
             <i className="fas fa-edit"></i> Start a Discussion
           </button>
 
           <div className={styles.navGroup}>
             <div className={styles.navMenu}>
-              <a onClick={() => { closePostModal(); setSearchQuery(''); setMobileMenuOpen(false); }} className={`${styles.navItem} ${!searchQuery && !activePost ? styles.active : ''}`}>
+              <a onClick={() => { setSearchQuery(''); setMobileMenuOpen(false); router.push('/'); }} className={`${styles.navItem} ${!searchQuery ? styles.active : ''}`}>
                 <i className={`far fa-comments ${styles.navIcon}`}></i> All Discussions
               </a>
             </div>
@@ -308,16 +242,16 @@ export default function Home() {
           <div className={styles.navGroup}>
             <div className={styles.navGroupTitle}>Tags</div>
             <div className={styles.navMenu}>
-              <a onClick={() => { closePostModal(); setSearchQuery('Newsroom'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { setSearchQuery('Newsroom'); setMobileMenuOpen(false); router.push('/'); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#00b84c'}}></span> Newsroom
               </a>
-              <a onClick={() => { closePostModal(); setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { setSearchQuery('VIP Tiers'); setMobileMenuOpen(false); router.push('/'); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#f5a623'}}></span> VIP Tiers
               </a>
-              <a onClick={() => { closePostModal(); setSearchQuery('My Squad'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { setSearchQuery('My Squad'); setMobileMenuOpen(false); router.push('/'); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#0070f3'}}></span> My Squad
               </a>
-              <a onClick={() => { closePostModal(); setSearchQuery('General'); setMobileMenuOpen(false); }} className={styles.navItem}>
+              <a onClick={() => { setSearchQuery('General'); setMobileMenuOpen(false); router.push('/'); }} className={styles.navItem}>
                 <span className={styles.tagDot} style={{background: '#8b5cf6'}}></span> General
               </a>
             </div>
@@ -348,7 +282,7 @@ export default function Home() {
               </>
             ) : filteredThreads.length > 0 ? (
               filteredThreads.map(thread => (
-                <div key={thread.id} className={styles.discussion} onClick={() => openPostModal(thread)}>
+                <div key={thread.id} className={styles.discussion} onClick={() => openPost(thread)}>
                   <div className={styles.discussionAvatar}>
                     {thread.first_name ? thread.first_name.charAt(0).toUpperCase() : 'U'}
                   </div>
@@ -376,8 +310,7 @@ export default function Home() {
                 <p>Be the first to start a discussion in this tag!</p>
                 <button className={styles.btnStartDiscussion} style={{maxWidth: '200px', margin: '2rem auto 0'}} onClick={() => {
                    if (!user) { window.location.href = loginUrl; return; }
-                   setNewTag(searchQuery || 'General'); 
-                   setIsModalOpen(true); 
+                   router.push('/create');
                 }}>
                   Start Discussion
                 </button>
@@ -386,103 +319,6 @@ export default function Home() {
           </div>
         </main>
       </div>
-
-      {/* FULL SCREEN DEEP VIEW MODAL */}
-      {activePost && (
-        <div className={styles.fullScreenModalOverlay} onClick={closePostModal}>
-          <div className={styles.fullScreenModalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.btnBackTopRight} onClick={closePostModal} title="Close Post">
-              <i className="fas fa-times"></i>
-            </button>
-            
-            <button className={styles.btnBack} onClick={closePostModal}>
-              <i className="fas fa-arrow-left"></i> Back to Feed
-            </button>
-            
-            <div className={styles.deepHeader}>
-              <div className={styles.deepAvatar}>
-                {activePost.first_name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h1 className={styles.deepTitle}>{activePost.title}</h1>
-                <div className={styles.discussionMeta} style={{marginBottom: '1rem'}}>
-                  <span className={styles.tagPill}><span className={styles.tagDotSmall} style={{color: getTagColor(activePost.tags)}}></span> {activePost.tags}</span>
-                  <span>By <strong>{activePost.first_name}</strong> ({activePost.user_type})</span>
-                  <span>{new Date(activePost.created_at).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className={styles.deepContent}>
-              {activePost.content}
-            </div>
-            
-            {/* COMMENTS SECTION */}
-            <div className={styles.commentsSection}>
-              <h3>Discussion (2)</h3>
-              
-              <form className={styles.commentForm} onSubmit={(e) => { e.preventDefault(); alert("Comment posted successfully!"); }}>
-                <textarea className={styles.commentInput} placeholder="Write a reply..."></textarea>
-                <button type="submit" className={styles.btnComment}>Reply</button>
-              </form>
-              
-              <div className={styles.commentList}>
-                <div className={styles.comment}>
-                  <div className={styles.commentAvatar}>A</div>
-                  <div className={styles.commentBody}>
-                    <h4>Admin <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>1 hr ago</span></h4>
-                    <p>Welcome to the Novaira Next-Gen platform. This looks incredible!</p>
-                  </div>
-                </div>
-                <div className={styles.comment}>
-                  <div className={styles.commentAvatar} style={{background: '#00b84c'}}>S</div>
-                  <div className={styles.commentBody}>
-                    <h4>System <span style={{fontSize:'0.75rem', color:'var(--text-muted)', marginLeft:'0.5rem'}}>30 mins ago</span></h4>
-                    <p>All database connections are secure and live fetching is fully operational.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* START DISCUSSION MODAL */}
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>Create Post</h2>
-              <button className={styles.modalClose} onClick={() => setIsModalOpen(false)}><i className="fas fa-times"></i></button>
-            </div>
-            <form onSubmit={submitDiscussion}>
-              <div className={styles.modalInputGroup}>
-                <label>Discussion Title</label>
-                <input type="text" className={styles.modalInput} placeholder="What's on your mind?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required maxLength={100} />
-              </div>
-              <div className={styles.modalInputGroup}>
-                <label>Select Tag</label>
-                <select className={styles.modalSelect} value={newTag} onChange={(e) => setNewTag(e.target.value)}>
-                  <option value="Newsroom">Newsroom</option>
-                  <option value="VIP Tiers">VIP Tiers</option>
-                  <option value="My Squad">My Squad</option>
-                  <option value="General">General</option>
-                </select>
-              </div>
-              <div className={styles.modalInputGroup}>
-                <label>Content</label>
-                <textarea className={styles.modalTextarea} placeholder="Type your message here..." value={newContent} onChange={(e) => setNewContent(e.target.value)} required></textarea>
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" className={styles.btnCancel} onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className={styles.btnSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? <><i className="fas fa-spinner fa-spin"></i> Posting...</> : 'Publish Post'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* FOOTER */}
       <footer className={styles.footer}>
