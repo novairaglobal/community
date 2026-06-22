@@ -1,41 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@300;400;500;600;700;800&display=swap');
-
+/* FLARUM EXACT CLONE VARIABLES */
 :root {
-  /* Default Dark Mode */
-  --bg-primary: #050505;
-  --bg-secondary: #111111;
-  --bg-tertiary: #1a1a1a;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7f9;
+  --bg-tertiary: #e9ecef;
   
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #555555;
-  
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
-  
-  --tier-bronze: #cd7f32;
-  --tier-silver: #c0c0c0;
-  --tier-gold: #ffd700;
-  --tier-diamond: #b9f2ff;
-
-  --font-sans: 'Inter', sans-serif;
-  --font-dot: 'DotGothic16', monospace;
-
-  --border-color: #333333;
-  --glass-bg: rgba(17, 17, 17, 0.7);
-}
-
-[data-theme="light"] {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-muted: #999999;
   
   --border-color: #e2e8f0;
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  
+  --brand-red: #d71921;
+  --brand-red-hover: #b9151c;
+  
+  --font-sans: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #161317;
+  --bg-secondary: #000000;
+  --bg-tertiary: #1f1d20;
+  
+  --text-primary: #efefef;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+  
+  --border-color: #2b2b2b;
 }
 
 * {
@@ -45,14 +36,12 @@
 }
 
 body {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  line-height: 1.6;
-  background-image: radial-gradient(var(--bg-tertiary) 1px, transparent 1px);
-  background-size: 24px 24px;
+  line-height: 1.5;
   min-height: 100vh;
-  transition: background-color 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -67,22 +56,7 @@ button {
   font-family: inherit;
 }
 
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-.dot-text {
-  font-family: var(--font-dot);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
