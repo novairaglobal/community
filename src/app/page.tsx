@@ -4,251 +4,284 @@ import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
 export default function Home() {
-  const [friends, setFriends] = useState(10);
-  const [tasks, setTasks] = useState(5);
+  const [theme, setTheme] = useState('dark');
+  const [friends, setFriends] = useState(15);
+  const [tasks, setTasks] = useState(10);
   const [income, setIncome] = useState(0);
-  const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   
-  // User Session State
+  // Loading State for Skeleton
+  const [loading, setLoading] = useState(true);
+  
+  const [currentUrl, setCurrentUrl] = useState('https://community.novairasolution.com');
   const [user, setUser] = useState<{ name: string; tier: string } | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Constants
   const ACCOUNTS_URL = 'https://accounts.novairasolution.com';
 
   useEffect(() => {
     setCurrentUrl(window.location.href);
 
-    // ==========================================
-    // FETCH USER SESSION FROM PHP BACKEND
-    // ==========================================
-    /* 
-      This fetch call will automatically send the 'NOVAIRA_SESSION' cookie 
-      to your PHP backend because of "credentials: 'include'".
-      You will need a small PHP file (e.g., get_user.php) that returns:
-      { "status": "success", "user": { "name": "Subha", "tier": "Gold" } }
-    */
+    // Initial theme check
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
     
+    // Set background RGB variables for glassmorphism
+    if (savedTheme === 'dark') {
+      document.documentElement.style.setProperty('--bg-primary-rgb', '5, 5, 5');
+    } else {
+      document.documentElement.style.setProperty('--bg-primary-rgb', '248, 250, 252');
+    }
+
+    // Check user session
     const checkSession = async () => {
       try {
         const res = await fetch(`${ACCOUNTS_URL}/api/get_user.php`, {
           method: 'GET',
-          credentials: 'include', // Important to send the HttpOnly cookie
+          credentials: 'include',
         });
         const data = await res.json();
         if (data && data.status === 'success') {
           setUser({ name: data.user.first_name, tier: data.user.user_type });
         }
       } catch (err) {
-        // Mocking a logged-in user for development testing (Remove this in production)
-        // setUser({ name: 'Subhankar', tier: 'Premium Agent' });
+        // Fallback for demo
+        // setUser({ name: 'Admin', tier: 'Diamond' });
+      } finally {
+        // Add a slight delay to demonstrate the super premium skeleton loader
+        setTimeout(() => setLoading(false), 800);
       }
     };
-    
     checkSession();
   }, []);
+
+  useEffect(() => {
+    const total = Math.floor(friends * tasks * 1.5 * 30);
+    setIncome(total);
+  }, [friends, tasks]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    if (newTheme === 'dark') {
+      document.documentElement.style.setProperty('--bg-primary-rgb', '5, 5, 5');
+    } else {
+      document.documentElement.style.setProperty('--bg-primary-rgb', '248, 250, 252');
+    }
+  };
 
   const loginUrl = `${ACCOUNTS_URL}/?redirect=${encodeURIComponent(currentUrl)}`;
   const registerUrl = `${ACCOUNTS_URL}/?registration=individual&redirect=${encodeURIComponent(currentUrl)}`;
   const logoutUrl = `${ACCOUNTS_URL}/logout.php?redirect=${encodeURIComponent(currentUrl)}`;
 
-  useEffect(() => {
-    // Simulator calculation
-    const total = Math.floor(friends * tasks * 1.5 * 30);
-    setIncome(total);
-  }, [friends, tasks]);
-
   return (
-    <div className={styles.container}>
-      {/* Navbar */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <div className={styles.logoIcon}>N</div>
-          <span>Novaira <span className={styles.dotText}>Community</span></span>
+    <div className={styles.appContainer}>
+      
+      {/* 1. Global Glass Header */}
+      <header className={styles.appHeader}>
+        <div className={styles.headerLeft}>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>N</div>
+            <span>Novaira <span className="dot-text text-secondary">Global</span></span>
+          </div>
         </div>
-        
-        <div className={styles.navActions}>
-          {user ? (
-            // LOGGED IN VIEW: User Dropdown
-            <div className={styles.userMenuWrapper}>
-              <button 
-                className={styles.userBtn} 
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <div className={styles.userAvatar}>{user.name.charAt(0)}</div>
-                <span className={styles.userName}>{user.name}</span>
-                <span style={{ fontSize: '0.8rem' }}>▼</span>
-              </button>
-              
-              {dropdownOpen && (
-                <div className={`${styles.dropdown} ${styles.glassPanel}`}>
-                  <div className={styles.dropdownHeader}>
-                    <div className="dot-text text-secondary" style={{ fontSize: '0.7rem' }}>Signed in as</div>
-                    <div style={{ fontWeight: 'bold' }}>{user.name}</div>
-                    <div className={styles.userTier}>{user.tier}</div>
-                  </div>
-                  <hr className={styles.divider} />
-                  <a href={`${ACCOUNTS_URL}/dashboard`} className={styles.dropdownItem}>My Dashboard</a>
-                  <a href={`${ACCOUNTS_URL}/settings`} className={styles.dropdownItem}>Settings</a>
-                  <hr className={styles.divider} />
-                  <a href={logoutUrl} className={`${styles.dropdownItem} ${styles.textRed}`}>Log Out</a>
-                </div>
-              )}
-            </div>
-          ) : (
-            // LOGGED OUT VIEW: Login & Register Buttons
+
+        <div className={styles.headerRight}>
+          <button onClick={toggleTheme} className={`${styles.themeToggle} hidden sm:flex`} aria-label="Toggle Theme">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+
+          {!loading && !user && (
             <>
               <a href={loginUrl} className={styles.btnLogin}>Login</a>
               <a href={registerUrl} className={styles.btnRegister}>Join the Elite</a>
             </>
           )}
         </div>
-      </nav>
-
-      {/* Hero Section */}
-      <header className={styles.hero}>
-        <h1 className={styles.heroTitle}>Maximum Growth.<br />Zero Investment.</h1>
-        <p className={styles.heroSubtitle}>
-          Join the exclusive Novaira Global Business network. Build your squad, complete tasks, and unlock passive income while you sleep.
-        </p>
       </header>
 
-      {/* VIP Tiers */}
-      <section className={styles.section}>
-        <header className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>[ VIP TIERS ]</h2>
-          <span className="dot-text text-secondary">Status System</span>
-        </header>
-        <div className={styles.tiersGrid}>
-          <div className={`${styles.tierCard} ${styles.glassPanel} ${styles.tierBronze}`}>
-            <div className={styles.tierBadge}></div>
-            <h3 className={styles.tierName}>Bronze</h3>
-            <p className={styles.tierDesc}>Start your journey. Basic task access.</p>
-            <div className={styles.tierPerk}>Standard Payouts (72h)</div>
-          </div>
-          <div className={`${styles.tierCard} ${styles.glassPanel} ${styles.tierSilver}`}>
-            <div className={styles.tierBadge}></div>
-            <h3 className={styles.tierName}>Silver</h3>
-            <p className={styles.tierDesc}>5 Active Referrals required.</p>
-            <div className={styles.tierPerk}>+10% Task Bonus</div>
-          </div>
-          <div className={`${styles.tierCard} ${styles.glassPanel} ${styles.tierGold}`}>
-            <div className={styles.tierBadge}></div>
-            <h3 className={styles.tierName}>Gold</h3>
-            <p className={styles.tierDesc}>Unlock high-paying premium tasks.</p>
-            <div className={styles.tierPerk}>Priority Payouts (24h)</div>
-          </div>
-          <div className={`${styles.tierCard} ${styles.glassPanel} ${styles.tierDiamond}`}>
-            <div className={styles.tierBadge}></div>
-            <h3 className={styles.tierName}>Diamond</h3>
-            <p className={styles.tierDesc}>The top 1%. Elite status only.</p>
-            <div className={styles.tierPerk}>Direct CEO Access</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Passive Income Simulator */}
-      <section className={styles.section}>
-        <header className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>[ PASSIVE INCOME ]</h2>
-          <span className="dot-text text-secondary">Calculator</span>
-        </header>
-        <div className={`${styles.calcBox} ${styles.glassPanel}`}>
-          <div className={styles.calcControls}>
-            <label>If I invite friends:</label>
-            <input 
-              type="range" 
-              min="1" max="100" 
-              value={friends} 
-              onChange={(e) => setFriends(Number(e.target.value))}
-              className={styles.slider} 
-            />
-            <div style={{ textAlign: 'right', marginBottom: '1rem' }} className="dot-text">{friends} Friends</div>
-
-            <label>And they do daily tasks:</label>
-            <input 
-              type="range" 
-              min="1" max="20" 
-              value={tasks} 
-              onChange={(e) => setTasks(Number(e.target.value))}
-              className={styles.slider} 
-            />
-            <div style={{ textAlign: 'right' }} className="dot-text">{tasks} Tasks</div>
-          </div>
-          <div className={styles.calcResult}>
-            <p className="dot-text text-secondary">My estimated monthly income</p>
-            <div className={styles.resultAmount}>₹ {income.toLocaleString()}</div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>while I sleep!</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Squad Challenge */}
-      <section className={styles.section}>
-        <div className={styles.squadGrid}>
-          <div className={`${styles.squadPanel} ${styles.glassPanel}`}>
-            <h2 className={styles.squadTitle}>Weekly Squad Challenge</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-              Team up with your 5 direct referrals. If your squad completes 50 tasks this week, everyone unlocks the "Super Squad" badge and a 20% earnings multiplier!
-            </p>
-            <div className={styles.squadMembers}>
-              {[1,2,3,4,5].map(num => (
-                <div key={num} className={styles.squadAvatar}>U{num}</div>
-              ))}
-            </div>
-            <button className={styles.btnRegister} style={{ width: '100%' }}>Create Squad</button>
-          </div>
+      {/* 2. Strict Grid Main Layout */}
+      <div className={styles.mainLayout}>
+        
+        {/* Desktop Sidebar */}
+        <aside className={styles.sidebar}>
           
-          {/* Unlock The Vault */}
-          <div className={`${styles.vault} ${styles.glassPanel}`}>
-            <div className={styles.vaultLock}>🔒</div>
-            <h3 className={styles.vaultTitle}>Unlock The Vault</h3>
-            <p className={styles.vaultDesc}>
-              Premium tasks and Fast Withdrawals are locked. Refer 3 active friends to gain permanent access to the Vault.
-            </p>
-            <div className={styles.vaultProgress}>
-              <div className={`${styles.progressDot} ${styles.active}`}></div>
-              <div className={styles.progressDot}></div>
-              <div className={styles.progressDot}></div>
+          {loading ? (
+            <div className={styles.sidebarUserCard}>
+              <div className={`${styles.skeleton} ${styles.skAvatar}`}></div>
+              <div className={`${styles.skeleton} ${styles.skText}`}></div>
+              <div className={`${styles.skeleton} ${styles.skTextShort}`}></div>
             </div>
-            <p className="dot-text" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>1 / 3 REFERRED</p>
-          </div>
-        </div>
-      </section>
+          ) : user ? (
+            <div className={styles.sidebarUserCard}>
+              <div className={styles.sidebarAvatar}>{user.name.charAt(0)}</div>
+              <div className={styles.sidebarUserName}>{user.name}</div>
+              <div className={styles.sidebarUserTier}>{user.tier}</div>
+              <a href={logoutUrl} className={styles.sidebarLogout}>Log Out</a>
+            </div>
+          ) : (
+            <div className={styles.sidebarUserCard} style={{padding: '2rem 1rem'}}>
+              <div style={{fontFamily: 'var(--font-dot)', marginBottom: '1rem'}}>Not Authenticated</div>
+              <a href={loginUrl} className={styles.btnRegister} style={{width: '100%', display: 'block'}}>Login</a>
+            </div>
+          )}
 
-      {/* Hall of Fame */}
-      <section className={styles.section}>
-        <header className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>[ HALL OF FAME ]</h2>
-          <span className="dot-text text-secondary">Top Referrers</span>
-        </header>
-        <div className={styles.fameGrid}>
-          <div className={styles.famePodium}>
-            <div className={styles.fameAvatar}></div>
-            <div className={styles.fameBox}>
-              <div>#2</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Silver Agent</div>
+          <div className={styles.sidebarLabel}>Platform</div>
+          <nav style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+            <a href="#" className={`${styles.menuItem} ${styles.active}`}><i className={`fas fa-home ${styles.menuIcon}`}></i> Hub</a>
+            <a href="#" className={styles.menuItem}><i className={`fas fa-tasks ${styles.menuIcon}`}></i> Tasks</a>
+            <a href="#" className={styles.menuItem}><i className={`fas fa-users ${styles.menuIcon}`}></i> Squad</a>
+            <a href="#" className={styles.menuItem}><i className={`fas fa-trophy ${styles.menuIcon}`}></i> Ranks</a>
+          </nav>
+
+          <div className={styles.sidebarLabel}>Resources</div>
+          <nav style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+            <a href="https://novairasolution.com" className={styles.menuItem}><i className={`fas fa-globe ${styles.menuIcon}`}></i> Website</a>
+            <a href="mailto:support@novairasolution.com" className={styles.menuItem}><i className={`fas fa-headset ${styles.menuIcon}`}></i> Support</a>
+          </nav>
+        </aside>
+
+        {/* 3. Main Content Area */}
+        <main className={styles.contentArea}>
+          
+          <header className={styles.hero}>
+            <div className={styles.heroBadge}>
+              <span className={styles.liveIndicator}></span> SEASON 1 IS LIVE
             </div>
-          </div>
-          <div className={styles.famePodium}>
-            <div className={styles.fameAvatar} style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', top: -15, left: '50%', transform: 'translateX(-50%)', fontSize: '1.5rem' }}>👑</div>
+            <h1 className={styles.heroTitle}>
+              Maximum Growth.<br /><span>Zero Investment.</span>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Welcome to the ultimate Novaira Global performance network. We've completely revolutionized affiliate growth by combining highly engaging daily tasks, squad-based gamification, and a transparent VIP tier system. Build your elite team today, dominate the weekly leaderboards, and unlock compounding passive income while you sleep.
+            </p>
+            
+            <div className={styles.heroStats}>
+              <div className={styles.statBox}>
+                <div className={styles.statValue}>10K+</div>
+                <div className={styles.statLabel}>Active Agents</div>
+              </div>
+              <div className={styles.statBox}>
+                <div className={styles.statValue}>₹50L+</div>
+                <div className={styles.statLabel}>Total Payouts</div>
+              </div>
+              <div className={styles.statBox}>
+                <div className={styles.statValue}>24/7</div>
+                <div className={styles.statLabel}>Support Access</div>
+              </div>
             </div>
-            <div className={styles.fameBox}>
-              <div style={{ color: 'var(--tier-gold)', fontSize: '1.2rem', fontWeight: 800 }}>#1</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--tier-gold)' }}>Premium Agent</div>
-              <div style={{ fontSize: '0.6rem', marginTop: '0.5rem', opacity: 0.8 }}>CEO Session Unlocked</div>
+
+            <div className={styles.heroActions}>
+              <button className={styles.btnPrimary}>Start Earning Now</button>
+              <button className={styles.btnSecondary}>Read The Rules</button>
             </div>
-          </div>
-          <div className={styles.famePodium}>
-            <div className={styles.fameAvatar}></div>
-            <div className={styles.fameBox}>
-              <div>#3</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Bronze Agent</div>
+          </header>
+
+          <section className={styles.section}>
+            <header className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>VIP Tiers</h2>
+            </header>
+            
+            <div className={styles.tiersGrid}>
+              {loading ? (
+                <>
+                  <div className={`${styles.skeleton} ${styles.skCard}`}></div>
+                  <div className={`${styles.skeleton} ${styles.skCard}`}></div>
+                  <div className={`${styles.skeleton} ${styles.skCard}`}></div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.tierCard}>
+                    <h3 className={styles.tierName}>Bronze</h3>
+                    <p className={styles.tierDesc}>Start your journey. Basic task access and standard community benefits.</p>
+                    <div className="dot-text text-secondary">Standard Payouts</div>
+                  </div>
+                  <div className={styles.tierCard}>
+                    <h3 className={styles.tierName}>Silver</h3>
+                    <p className={styles.tierDesc}>Requires 5 Active Referrals. Unlock better tasks and exclusive support.</p>
+                    <div className="dot-text text-secondary" style={{color: 'var(--tier-silver)'}}>+10% Task Bonus</div>
+                  </div>
+                  <div className={styles.tierCard}>
+                    <h3 className={styles.tierName}>Gold</h3>
+                    <p className={styles.tierDesc}>High-paying premium tasks. Requires 20 Active Referrals.</p>
+                    <div className="dot-text text-secondary" style={{color: 'var(--tier-gold)'}}>Priority Payouts</div>
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+
+          <section className={styles.section}>
+            <header className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Income Simulator</h2>
+            </header>
+            <div className={styles.calcBox}>
+              <div>
+                <label style={{display: 'block', fontWeight: 600, fontSize: '1.2rem'}}>Active Referrals</label>
+                <input type="range" min="1" max="100" value={friends} onChange={(e) => setFriends(Number(e.target.value))} className={styles.slider} />
+                <div className="dot-text" style={{fontSize: '1.5rem', marginBottom: '3rem'}}>{friends} Friends</div>
+
+                <label style={{display: 'block', fontWeight: 600, fontSize: '1.2rem'}}>Daily Tasks Done</label>
+                <input type="range" min="1" max="20" value={tasks} onChange={(e) => setTasks(Number(e.target.value))} className={styles.slider} />
+                <div className="dot-text" style={{fontSize: '1.5rem'}}>{tasks} Tasks</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <p className="dot-text text-secondary">Monthly Passive Income</p>
+                <div className={styles.resultAmount}>₹{income.toLocaleString()}</div>
+                <button className={styles.btnRegister} style={{marginTop: '2rem'}}>Start Earning</button>
+              </div>
+            </div>
+          </section>
+
+          {/* Premium Footer */}
+          <footer className={styles.footer}>
+            <div className={styles.footerGrid}>
+              <div className={styles.footerCol}>
+                <div className={styles.logo} style={{ marginBottom: '1.5rem' }}>
+                  <div className={styles.logoIcon}>N</div>
+                  <span>Novaira <span className="dot-text text-secondary">Global</span></span>
+                </div>
+                <p style={{color: 'var(--text-secondary)', lineHeight: 1.8, maxWidth: '400px'}}>
+                  A premier performance marketing agency scaling mobile apps from 0 to 1M+ users. Specializing in robust User Acquisition and profitable growth systems.
+                </p>
+              </div>
+              <div className={styles.footerCol}>
+                <h4>Platform</h4>
+                <ul className={styles.footerLinks}>
+                  <li><a href="#">Gamification Hub</a></li>
+                  <li><a href="#">VIP Tiers</a></li>
+                  <li><a href="#">Income Simulator</a></li>
+                </ul>
+              </div>
+              <div className={styles.footerCol}>
+                <h4>Contact</h4>
+                <ul className={styles.footerLinks}>
+                  <li><a href="mailto:support@novairasolution.com">support@novairasolution.com</a></li>
+                  <li><a href="https://wa.me/919093815689">WhatsApp Support</a></li>
+                </ul>
+              </div>
+            </div>
+            <div className={styles.legalLinks}>
+              <a href="#">Terms & Conditions</a>
+              <a href="#">Privacy Policy</a>
+              <a href="#">Refund Policy</a>
+              <span>&copy; {new Date().getFullYear()} Novaira Global. All rights reserved.</span>
+            </div>
+          </footer>
+
+        </main>
+      </div>
+
+      {/* 4. Native Mobile Bottom Navigation (Visible only on mobile) */}
+      <nav className={styles.bottomNav}>
+        <a href="#" className={`${styles.bottomNavItem} ${styles.active}`}><i className="fas fa-home"></i><span>Hub</span></a>
+        <a href="#" className={styles.bottomNavItem}><i className="fas fa-tasks"></i><span>Tasks</span></a>
+        <a href="#" className={styles.bottomNavItem}><i className="fas fa-users"></i><span>Squad</span></a>
+        <a href="#" className={styles.bottomNavItem} onClick={toggleTheme}>
+          <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i><span>Theme</span>
+        </a>
+      </nav>
 
     </div>
   );
